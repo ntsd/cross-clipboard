@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  go:
+    build: .
+    volumes:
+      - ./:/app
+    # ports:
+    #   - "6666:6666"
+    network_mode : host
