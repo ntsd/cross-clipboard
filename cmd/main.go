@@ -54,32 +54,26 @@ func main() {
 
 	fmt.Printf("\n[*] Your Multiaddress Is: /ip4/%s/tcp/%v/p2p/%s\n", cfg.ListenHost, cfg.ListenPort, host.ID().Pretty())
 
-	discoveryNotifees := p2p.InitMultiMDNS(host, cfg.RendezvousString)
+	peerChan := p2p.InitMultiMDNS(host, cfg.RendezvousString)
 
-	for id, discoveryNotifee := range discoveryNotifees {
-		if id == host.ID().Pretty() { // not connect to itself id
-			continue
-		}
+	peer := <-peerChan // will block untill we discover a peer
+	fmt.Println("Found peer:", peer, ", connecting")
 
-		peer := <-discoveryNotifee.PeerChan // will block untill we discover a peer
-		fmt.Println("Found peer:", peer, ", connecting")
+	if err := host.Connect(ctx, peer); err != nil {
+		fmt.Println("Connection failed:", err)
+	}
 
-		if err := host.Connect(ctx, peer); err != nil {
-			fmt.Println("Connection failed:", err)
-		}
+	// open a stream, this stream will be handled by handleStream other end
+	stream, err := host.NewStream(ctx, peer.ID, protocol.ID(cfg.ProtocolID))
 
-		// open a stream, this stream will be handled by handleStream other end
-		stream, err := host.NewStream(ctx, peer.ID, protocol.ID(cfg.ProtocolID))
+	if err != nil {
+		fmt.Println("Stream open failed", err)
+	} else {
+		rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-		if err != nil {
-			fmt.Println("Stream open failed", err)
-		} else {
-			rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-			go p2p.WriteData(rw)
-			go p2p.ReadData(rw)
-			fmt.Println("Connected to:", peer)
-		}
+		go p2p.WriteData(rw)
+		go p2p.ReadData(rw)
+		fmt.Println("Connected to:", peer)
 	}
 
 	select {} //wait here
