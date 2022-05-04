@@ -10,19 +10,24 @@ import (
 )
 
 type DiscoveryNotifee struct {
+	PeerHost host.Host
 	PeerChan chan peer.AddrInfo
 }
 
 //interface to be called when new  peer is found
 func (n *DiscoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	fmt.Println("Discover", pi)
-	// n.PeerChan <- pi
+	fmt.Println("Discovered", pi)
+	if n.PeerHost.ID().Pretty() != pi.ID.Pretty() {
+		n.PeerChan <- pi
+	}
 }
 
 //Initialize the MDNS service
 func InitMultiMDNS(peerhost host.Host, rendezvous string) chan peer.AddrInfo {
 	// register with service so that we get notified about peer discovery
-	n := &DiscoveryNotifee{}
+	n := &DiscoveryNotifee{
+		PeerHost: peerhost,
+	}
 	n.PeerChan = make(chan peer.AddrInfo)
 
 	// An hour might be a long long period in practical applications. But this is fine for us
