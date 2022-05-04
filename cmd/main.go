@@ -10,7 +10,7 @@ import (
 	mrand "math/rand"
 	"os"
 
-	"github.com/ntsd/cross-clipboard/p2p"
+	"github.com/ntsd/cross-clipboard/pkg/p2p"
 )
 
 func main() {
