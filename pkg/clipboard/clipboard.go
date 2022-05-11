@@ -28,6 +28,6 @@ func NewClipboard() *Clipboard {
 
 func (c *Clipboard) Write(newClipboard []byte) {
 	c.mu.Lock()
-	<-clipboard.Write(clipboard.FmtText, newClipboard)
+	clipboard.Write(clipboard.FmtText, newClipboard)
 	c.mu.Unlock()
 }
