@@ -33,56 +33,29 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 }
 
 func (s *StreamHandler) ReadData(rw *bufio.ReadWriter) {
-	// for {
-	// 	str, err := rw.ReadString('\n')
-	// 	if err != nil {
-	// 		fmt.Println("Error reading from buffer:", err)
-	// 	}
-
-	// 	if str == "" {
-	// 		return
-	// 	}
-	// 	if str != "\n" {
-	// 		// Green console colour: 	\x1b[32m
-	// 		// Reset console colour: 	\x1b[0m
-	// 		fmt.Printf("\x1b[32m%s\x1b[0m> ", str)
-	// 	}
-	// }
 	for {
 		bytes, err := rw.ReadBytes(EOF)
 		if err != nil {
 			fmt.Println("Error reading from buffer:", err)
 		}
-		fmt.Println("Received data from peer:", string(bytes))
-		s.Clipboard.Write(bytes)
+		// remove last bytes
+		length := len(bytes)
+		if length > 0 {
+			bytes = bytes[:length-1]
+			fmt.Printf("Received data from peer\n size: %d data: %s\n", length, string(bytes))
+			s.Clipboard.Write(bytes)
+		}
 	}
 }
 
 func (s *StreamHandler) WriteData(rw *bufio.ReadWriter) {
 	for clipboardBytes := range s.Clipboard.ReadChannel {
-		fmt.Println("Sending data to peer:", string(clipboardBytes))
-		rw.Write(clipboardBytes)
-		rw.WriteByte(EOF)
-		rw.Flush()
+		length := len(clipboardBytes)
+		if length > 0 {
+			fmt.Printf("Sending data to peer\n size: %d data: %s\n", length, string(clipboardBytes))
+			rw.Write(clipboardBytes)
+			rw.WriteByte(EOF)
+			rw.Flush()
+		}
 	}
-
-	// stdReader := bufio.NewReader(os.Stdin)
-
-	// for {
-	// 	fmt.Print("> ")
-	// 	sendData, err := stdReader.ReadString('\n')
-	// 	if err != nil {
-	// 		fmt.Println("Error reading from stdin")
-	// 		panic(err)
-	// 	}
-
-	// 	_, err = rw.WriteString(fmt.Sprintf("%s\n", sendData))
-	// 	if err != nil {
-	// 		fmt.Println("Error writing to buffer", err)
-	// 	}
-	// 	err = rw.Flush()
-	// 	if err != nil {
-	// 		fmt.Println("Error flushing buffer :", err)
-	// 	}
-	// }
 }
