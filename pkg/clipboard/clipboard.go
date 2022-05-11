@@ -1,8 +1,8 @@
 package clipboard
 
 import (
-	"bytes"
 	"context"
+	"sync"
 
 	"golang.design/x/clipboard"
 )
@@ -10,6 +10,7 @@ import (
 type Clipboard struct {
 	ReadChannel      <-chan []byte
 	CurrentClipboard []byte
+	mu               sync.RWMutex
 }
 
 func NewClipboard() *Clipboard {
@@ -26,7 +27,7 @@ func NewClipboard() *Clipboard {
 }
 
 func (c *Clipboard) Write(newClipboard []byte) {
-	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
-		<-clipboard.Write(clipboard.FmtText, newClipboard)
-	}
+	c.mu.RLock()
+	<-clipboard.Write(clipboard.FmtText, newClipboard)
+	c.mu.RUnlock()
 }
