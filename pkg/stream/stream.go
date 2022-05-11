@@ -56,6 +56,9 @@ func (s *StreamHandler) WriteData(rw *bufio.ReadWriter) {
 		if length > 0 {
 			fmt.Printf("Sending data to peer\n size: %d data: %s\n", length, string(clipboardBytes))
 
+			// set current clipbaord to avoid recursion
+			s.Clipboard.CurrentClipboard = clipboardBytes
+
 			// append EOF
 			clipboardBytes = append(clipboardBytes, EOF)
 
