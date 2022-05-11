@@ -27,7 +27,7 @@ func NewClipboard() *Clipboard {
 }
 
 func (c *Clipboard) Write(newClipboard []byte) {
-	c.mu.RLock()
+	c.mu.Lock()
 	<-clipboard.Write(clipboard.FmtText, newClipboard)
-	c.mu.RUnlock()
+	c.mu.Unlock()
 }
