@@ -55,17 +55,21 @@ func (s *StreamHandler) WriteData(rw *bufio.ReadWriter) {
 		length := len(clipboardBytes)
 		if length > 0 {
 			fmt.Printf("Sending data to peer\n size: %d data: %s\n", length, string(clipboardBytes))
+
+			// append EOF
+			clipboardBytes = append(clipboardBytes, EOF)
+
 			_, err := rw.Write(clipboardBytes)
 			if err != nil {
 				fmt.Println("Error writing buffer:", err)
 				break
 			}
-			err = rw.WriteByte(EOF)
+
+			err = rw.Flush()
 			if err != nil {
-				fmt.Println("Error writing eof buffer:", err)
+				fmt.Println("Error flush writing:", err)
 				break
 			}
-			rw.Flush()
 		}
 	}
 	fmt.Println("Ending write stream")

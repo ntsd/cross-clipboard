@@ -1,13 +1,15 @@
 package clipboard
 
 import (
+	"bytes"
 	"context"
 
 	"golang.design/x/clipboard"
 )
 
 type Clipboard struct {
-	ReadChannel <-chan []byte
+	ReadChannel      <-chan []byte
+	CurrentClipboard []byte
 }
 
 func NewClipboard() *Clipboard {
@@ -23,6 +25,8 @@ func NewClipboard() *Clipboard {
 	}
 }
 
-func (c *Clipboard) Write(bytes []byte) {
-	clipboard.Write(clipboard.FmtText, bytes)
+func (c *Clipboard) Write(newClipboard []byte) {
+	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
+		<-clipboard.Write(clipboard.FmtText, newClipboard)
+	}
 }
