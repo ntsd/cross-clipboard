@@ -75,8 +75,8 @@ func main() {
 		} else {
 			rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-			go streamHandle.WriteData(rw)
-			go streamHandle.ReadData(rw)
+			go streamHandle.WriteData(rw, "peer")
+			go streamHandle.ReadData(rw, "peer")
 			fmt.Println("Connected to:", peer)
 		}
 	}

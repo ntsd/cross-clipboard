@@ -26,13 +26,13 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-	go s.ReadData(rw)
-	go s.WriteData(rw)
+	go s.ReadData(rw, "handler")
+	go s.WriteData(rw, "handler")
 
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
 
-func (s *StreamHandler) ReadData(rw *bufio.ReadWriter) {
+func (s *StreamHandler) ReadData(rw *bufio.ReadWriter, debug string) {
 	for {
 		bytes, err := rw.ReadBytes(EOF)
 		if err != nil {
@@ -43,18 +43,18 @@ func (s *StreamHandler) ReadData(rw *bufio.ReadWriter) {
 		length := len(bytes) - 1
 		if length > 0 {
 			bytes = bytes[:length]
-			fmt.Printf("Received data from peer\n size: %d data: %s\n", length, string(bytes))
+			fmt.Printf("Received data from peer %s \n size: %d data: %s\n", debug, length, string(bytes))
 			s.Clipboard.Write(bytes)
 		}
 	}
 	fmt.Println("Ending read stream")
 }
 
-func (s *StreamHandler) WriteData(rw *bufio.ReadWriter) {
+func (s *StreamHandler) WriteData(rw *bufio.ReadWriter, debug string) {
 	for clipboardBytes := range s.Clipboard.ReadChannel {
 		length := len(clipboardBytes)
 		if length > 0 {
-			fmt.Printf("Sending data to peer\n size: %d data: %s\n", length, string(clipboardBytes))
+			fmt.Printf("Sending data to peer %s \n size: %d data: %s\n", debug, length, string(clipboardBytes))
 
 			// set current clipbaord to avoid recursion
 			s.Clipboard.CurrentClipboard = clipboardBytes
