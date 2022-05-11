@@ -8,6 +8,8 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 )
 
+const EOF byte = 0x00
+
 type StreamHandler struct {
 	Clipboard *clipboard.Clipboard
 }
@@ -47,13 +49,12 @@ func (s *StreamHandler) ReadData(rw *bufio.ReadWriter) {
 	// 	}
 	// }
 	for {
-		var buf []byte
-		_, err := rw.Read(buf)
+		bytes, err := rw.ReadBytes(EOF)
 		if err != nil {
 			fmt.Println("Error reading from buffer:", err)
 		}
-		fmt.Println("Received data from peer:", string(buf))
-		s.Clipboard.Write(buf)
+		fmt.Println("Received data from peer:", string(bytes))
+		s.Clipboard.Write(bytes)
 	}
 }
 
@@ -61,6 +62,7 @@ func (s *StreamHandler) WriteData(rw *bufio.ReadWriter) {
 	for clipboardBytes := range s.Clipboard.ReadChannel {
 		fmt.Println("Sending data to peer:", string(clipboardBytes))
 		rw.Write(clipboardBytes)
+		rw.WriteByte(EOF)
 		rw.Flush()
 	}
 
