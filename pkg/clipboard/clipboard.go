@@ -1,6 +1,7 @@
 package clipboard
 
 import (
+	"bytes"
 	"context"
 	"sync"
 
@@ -27,7 +28,7 @@ func NewClipboard() *Clipboard {
 }
 
 func (c *Clipboard) Write(newClipboard []byte) {
-	c.mu.Lock()
-	clipboard.Write(clipboard.FmtText, newClipboard)
-	c.mu.Unlock()
+	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
+		<-clipboard.Write(clipboard.FmtText, newClipboard)
+	}
 }
