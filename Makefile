@@ -3,3 +3,6 @@ run:
 
 android-install:
 	gomobile install .\cmd\android\...
+
+android-log:
+	adb logcat | grep GoLog

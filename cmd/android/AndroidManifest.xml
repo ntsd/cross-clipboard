@@ -11,14 +11,13 @@
 	     http://developer.android.com/guide/topics/manifest/manifest-intro.html#perms -->
 	<uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
 	<application android:label="Cross Clipboard" android:debuggable="true">
 
 	<activity android:name="org.golang.app.GoNativeActivity"
-		android:label="network"
+		android:label="Cross Clipboard"
 		android:configChanges="orientation|keyboardHidden">
-		<meta-data android:name="android.app.lib_name" android:value="network" />
+		<meta-data android:name="android.app.lib_name" android:value="cross-clipboard" />
 		<intent-filter>
 			<action android:name="android.intent.action.MAIN" />
 			<category android:name="android.intent.category.LAUNCHER" />
