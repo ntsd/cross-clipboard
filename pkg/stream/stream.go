@@ -12,29 +12,32 @@ const EOF byte = 0x00
 
 type StreamHandler struct {
 	Clipboard *clipboard.Clipboard
+	Writers   []*bufio.Writer
 }
 
 func NewStreamHandler(cp *clipboard.Clipboard) *StreamHandler {
-	return &StreamHandler{
+	s := &StreamHandler{
 		Clipboard: cp,
 	}
+	go s.WriteData()
+	return s
 }
 
 func (s *StreamHandler) HandleStream(stream network.Stream) {
 	fmt.Println("Got a new stream!")
 
 	// Create a buffer stream for non blocking read and write.
-	rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
+	// rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-	go s.ReadData(rw, "handler")
-	go s.WriteData(rw, "handler")
+	go s.ReadData(bufio.NewReader(stream), "handler")
+	s.AddWriter(bufio.NewWriter(stream))
 
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
 
-func (s *StreamHandler) ReadData(rw *bufio.ReadWriter, debug string) {
+func (s *StreamHandler) ReadData(reader *bufio.Reader, debug string) {
 	for {
-		bytes, err := rw.ReadBytes(EOF)
+		bytes, err := reader.ReadBytes(EOF)
 		if err != nil {
 			fmt.Println("Error reading from buffer:", err)
 			break
@@ -50,11 +53,11 @@ func (s *StreamHandler) ReadData(rw *bufio.ReadWriter, debug string) {
 	fmt.Println("Ending read stream")
 }
 
-func (s *StreamHandler) WriteData(rw *bufio.ReadWriter, debug string) {
+func (s *StreamHandler) WriteData() {
 	for clipboardBytes := range s.Clipboard.ReadChannel {
 		length := len(clipboardBytes)
 		if length > 0 {
-			fmt.Printf("Sending data to peer %s \n size: %d data: %s\n", debug, length, string(clipboardBytes))
+			fmt.Printf("Sending data to peer\n size: %d data: %s\n", length, string(clipboardBytes))
 
 			// set current clipbaord to avoid recursion
 			s.Clipboard.CurrentClipboard = clipboardBytes
@@ -62,18 +65,24 @@ func (s *StreamHandler) WriteData(rw *bufio.ReadWriter, debug string) {
 			// append EOF
 			clipboardBytes = append(clipboardBytes, EOF)
 
-			_, err := rw.Write(clipboardBytes)
-			if err != nil {
-				fmt.Println("Error writing buffer:", err)
-				break
-			}
+			for _, writer := range s.Writers {
+				_, err := writer.Write(clipboardBytes)
+				if err != nil {
+					fmt.Println("Error writing buffer:", err)
+					break
+				}
 
-			err = rw.Flush()
-			if err != nil {
-				fmt.Println("Error flush writing:", err)
-				break
+				err = writer.Flush()
+				if err != nil {
+					fmt.Println("Error flush writing:", err)
+					break
+				}
 			}
 		}
 	}
 	fmt.Println("Ending write stream")
+}
+
+func (s *StreamHandler) AddWriter(writer *bufio.Writer) {
+	s.Writers = append(s.Writers, writer)
 }

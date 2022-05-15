@@ -40,11 +40,11 @@ func StartP2P(cfg utils.Config) {
 
 	// initial clipboard
 	cb := clipboard.NewClipboard()
-	streamHandle := stream.NewStreamHandler(cb)
+	streamHandler := stream.NewStreamHandler(cb)
 
 	// Set a function as stream handler.
 	// This function is called when a peer initiates a connection and starts a stream with this peer.
-	host.SetStreamHandler(protocol.ID(cfg.ProtocolID), streamHandle.HandleStream)
+	host.SetStreamHandler(protocol.ID(cfg.ProtocolID), streamHandler.HandleStream)
 
 	fmt.Printf("\n[*] Your Multiaddress Is: /ip4/%s/tcp/%v/p2p/%s\n", cfg.ListenHost, cfg.ListenPort, host.ID().Pretty())
 
@@ -62,10 +62,8 @@ func StartP2P(cfg utils.Config) {
 		if err != nil {
 			fmt.Println("Stream open failed", err)
 		} else {
-			rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
-			go streamHandle.WriteData(rw, "peer")
-			go streamHandle.ReadData(rw, "peer")
+			go streamHandler.ReadData(bufio.NewReader(stream), "peer")
+			streamHandler.AddWriter(bufio.NewWriter(stream))
 			fmt.Println("Connected to:", peer)
 		}
 	}
