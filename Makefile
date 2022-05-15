@@ -1,8 +1,8 @@
 run:
 	go run ./cmd/main.go
 
-android-install:
-	gomobile install .\android\...
+mobile-install:
+	gomobile install .\mobile\...
 
 android-log:
 	adb logcat | grep GoLog
