@@ -65,7 +65,7 @@ func (s *StreamHandler) CreateWriteData() {
 			clipboardBytes = append(clipboardBytes, EOF)
 
 			for name, writer := range s.Writers {
-				fmt.Printf("Sending data to peer %s \n size: %d data: %s\n", name, length, string(clipboardBytes))
+				fmt.Printf("Sending data to peer: %s \n size: %d data: %s\n", name, length, string(clipboardBytes))
 
 				_, err := writer.Write(clipboardBytes)
 				if err != nil {

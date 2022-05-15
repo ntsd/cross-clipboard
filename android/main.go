@@ -33,28 +33,24 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/utils"
 	"golang.org/x/mobile/app"
 	"golang.org/x/mobile/event/lifecycle"
+	"golang.org/x/mobile/event/paint"
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/exp/app/debug"
-	"golang.org/x/mobile/exp/gl/glutil"
 	"golang.org/x/mobile/gl"
 )
 
 var (
-	images   *glutil.Images
-	fps      *debug.FPS
-	program  gl.Program
-	position gl.Attrib
-	offset   gl.Uniform
-	color    gl.Uniform
-	buf      gl.Buffer
-	green    float32
-	touchX   float32
-	touchY   float32
+	fps *debug.FPS
+
+	touchX float32
+	touchY float32
 )
 
 func main() {
 	app.Main(func(a app.App) {
+		var glctx gl.Context
+
 		cfg := utils.Config{
 			RendezvousString: "default-group",
 			ProtocolID:       "/cross-clipboard/0.0.1",
@@ -67,6 +63,22 @@ func main() {
 		for e := range a.Events() {
 			switch e := a.Filter(e).(type) {
 			case lifecycle.Event:
+				switch e.Crosses(lifecycle.StageVisible) {
+				case lifecycle.CrossOn:
+					glctx, _ = e.DrawContext.(gl.Context)
+					onStart(glctx)
+					a.Send(paint.Event{}) // keep animating
+				case lifecycle.CrossOff:
+					onStop(glctx)
+					glctx = nil
+				}
+			case paint.Event:
+				if glctx == nil || e.External {
+					continue
+				}
+				onPaint(glctx, sz)
+				a.Publish()
+				a.Send(paint.Event{}) // keep animating
 			case size.Event:
 				sz = e
 				touchX = float32(sz.WidthPx / 2)
@@ -77,4 +89,14 @@ func main() {
 			}
 		}
 	})
+}
+
+func onStart(glctx gl.Context) {
+}
+func onStop(glctx gl.Context) {
+	fps.Release()
+}
+func onPaint(glctx gl.Context, sz size.Event) {
+	glctx.ClearColor(1, 0, 0, 1)
+	glctx.Clear(gl.COLOR_BUFFER_BIT)
 }
