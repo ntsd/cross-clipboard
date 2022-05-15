@@ -55,17 +55,20 @@ func StartP2P(cfg utils.Config) {
 
 		if err := host.Connect(ctx, peer); err != nil {
 			fmt.Println("Connection failed:", err)
+			continue
 		}
 
 		// open a stream, this stream will be handled by handleStream other end
 		stream, err := host.NewStream(ctx, peer.ID, protocol.ID(cfg.ProtocolID))
 		if err != nil {
 			fmt.Println("Stream open failed", err)
-		} else {
-			go streamHandler.ReadData(bufio.NewReader(stream), "peer")
-			streamHandler.AddWriter(bufio.NewWriter(stream))
-			fmt.Println("Connected to:", peer)
+			continue
 		}
+		// Add reader
+		go streamHandler.CreateReadData(bufio.NewReader(stream), peer.ID.Pretty())
+		// Add writer
+		streamHandler.AddWriter(bufio.NewWriter(stream), peer.ID.Pretty())
+		fmt.Println("Connected to:", peer)
 	}
 
 	select {} //wait here
