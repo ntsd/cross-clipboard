@@ -29,6 +29,6 @@ func NewClipboard() *Clipboard {
 
 func (c *Clipboard) Write(newClipboard []byte) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
-		<-clipboard.Write(clipboard.FmtText, newClipboard)
+		clipboard.Write(clipboard.FmtText, newClipboard)
 	}
 }
