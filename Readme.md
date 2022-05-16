@@ -6,5 +6,14 @@ A multi device clipboard sharing over p2p in lan network.
 
 - Go
 - libp2p
-- P2P Network
 - Multicast DNS (mDNS)
+- Fyne
+
+## Installation
+
+Install Fyne
+
+```shell
+go install fyne.io/fyne/v2/cmd/fyne
+fyne install
+```
