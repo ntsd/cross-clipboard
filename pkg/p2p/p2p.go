@@ -11,12 +11,12 @@ import (
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/discovery"
 	"github.com/ntsd/cross-clipboard/pkg/stream"
-	"github.com/ntsd/cross-clipboard/pkg/utils"
 )
 
-func StartP2P(cfg utils.Config) {
+func StartP2P(cfg config.Config) {
 	ctx := context.Background()
 
 	// Creates a new ECDSA key pair for this host.

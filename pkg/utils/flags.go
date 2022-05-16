@@ -2,17 +2,12 @@ package utils
 
 import (
 	"flag"
+
+	"github.com/ntsd/cross-clipboard/pkg/config"
 )
 
-type Config struct {
-	RendezvousString string
-	ProtocolID       string
-	ListenHost       string
-	ListenPort       int
-}
-
-func ParseFlags() Config {
-	c := Config{}
+func ParseFlags() config.Config {
+	c := config.Config{}
 
 	flag.StringVar(&c.RendezvousString, "rendezvous", "default-group", "Unique string to identify group of nodes. Share this with your friends to let them connect with you")
 	flag.StringVar(&c.ProtocolID, "pid", "/cross-clipboard/0.0.1", "Sets a protocol id for stream headers")
