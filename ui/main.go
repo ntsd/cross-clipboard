@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/ntsd/cross-clipboard/pkg/config"
+	"github.com/ntsd/cross-clipboard/pkg/p2p"
 	"github.com/ntsd/cross-clipboard/ui/assets"
 
 	"fyne.io/fyne/v2/app"
@@ -14,6 +16,14 @@ const (
 )
 
 func main() {
+	cfg := config.Config{
+		RendezvousString: "default-group",
+		ProtocolID:       "/cross-clipboard/0.0.1",
+		ListenHost:       "0.0.0.0",
+		ListenPort:       4001,
+	}
+	p2p.StartP2P(cfg)
+
 	a := app.NewWithID(APP_ID)
 	a.SetIcon(assets.ResourceLogoPng)
 
