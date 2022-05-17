@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/ntsd/cross-clipboard/assets"
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/p2p"
-	"github.com/ntsd/cross-clipboard/ui/assets"
 
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -32,9 +32,7 @@ func main() {
 	hello := widget.NewLabel("Hello Fyne!")
 	vBox := container.NewVBox(
 		hello,
-		widget.NewButton("Hi!", func() {
-			hello.SetText("Welcome :)")
-		}),
+		widget.NewButton("Hi!", func() {}),
 	)
 	vScroll := container.NewVScroll(vBox)
 
