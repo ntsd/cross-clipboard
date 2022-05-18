@@ -1,8 +1,11 @@
 run:
 	go run ./cmd/main.go
 
-run-ui:
-	go run ./ui/main.go
+build-mobile:
+	gomobile build ./mobile/...
+
+run-mobile:
+	gomobile install ./mobile/...
 
 android-log:
 	adb logcat | grep GoLog

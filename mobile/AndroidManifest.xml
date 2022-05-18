@@ -3,7 +3,8 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.github.ntsd.cross.clipbaord"
 	android:versionCode="1"
-	android:versionName="1.0">
+	android:versionName="1.0"
+>
 
 	<!-- In order to access the network, your application manifest must
 	     specify the permission requirement. See the following page for
@@ -12,16 +13,17 @@
 	<uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-	<application android:label="Cross Clipboard" android:debuggable="true">
-
-	<activity android:name="org.golang.app.GoNativeActivity"
-		android:label="Cross Clipboard"
-		android:configChanges="orientation|keyboardHidden">
-		<meta-data android:name="android.app.lib_name" android:value="cross-clipboard" />
-		<intent-filter>
-			<action android:name="android.intent.action.MAIN" />
-			<category android:name="android.intent.category.LAUNCHER" />
-		</intent-filter>
-	</activity>
+	<application android:label="@string/app_name" android:debuggable="true">
+		<activity
+			android:name="org.golang.app.GoNativeActivity"
+			android:label="@string/app_name"
+			android:configChanges="orientation|keyboardHidden"
+		>
+			<meta-data android:name="android.app.lib_name" android:value="cross-clipboard" />
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
 	</application>
 </manifest>
