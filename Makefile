@@ -1,6 +1,9 @@
 run:
 	go run ./cmd/main.go
 
+bind-android:
+	gomobile bind -target=android ./mobile/...
+
 build-mobile:
 	gomobile build ./mobile/...
 

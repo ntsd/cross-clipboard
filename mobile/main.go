@@ -33,7 +33,10 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/p2p"
 )
 
-func Start() {
+type CrossClipbard struct {
+}
+
+func (c *CrossClipbard) Start() {
 	cfg := config.Config{
 		RendezvousString: "default-group",
 		ProtocolID:       "/cross-clipboard/0.0.1",
@@ -41,4 +44,8 @@ func Start() {
 		ListenPort:       4001,
 	}
 	p2p.StartP2P(cfg)
+}
+
+func NewCrossClipbard() *CrossClipbard {
+	return &CrossClipbard{}
 }
