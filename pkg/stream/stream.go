@@ -13,19 +13,23 @@ const EOF byte = 0x00
 type StreamHandler struct {
 	Clipboard *clipboard.Clipboard
 	Writers   map[string]*bufio.Writer
+	LogChan   chan string
+	ErrorChan chan error
 }
 
-func NewStreamHandler(cp *clipboard.Clipboard) *StreamHandler {
+func NewStreamHandler(cp *clipboard.Clipboard, logChan chan string, errorChan chan error) *StreamHandler {
 	s := &StreamHandler{
 		Clipboard: cp,
 		Writers:   make(map[string]*bufio.Writer),
+		LogChan:   logChan,
+		ErrorChan: errorChan,
 	}
 	go s.CreateWriteData()
 	return s
 }
 
 func (s *StreamHandler) HandleStream(stream network.Stream) {
-	fmt.Println("Got a new stream!")
+	s.LogChan <- fmt.Sprintf("got a new stream from %s", stream.Conn().RemotePeer())
 
 	// Create a buffer stream for non blocking read and write.
 	// rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
@@ -40,18 +44,18 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 	for {
 		bytes, err := reader.ReadBytes(EOF)
 		if err != nil {
-			fmt.Println("Error reading from buffer:", err)
+			s.ErrorChan <- fmt.Errorf("error reading from buffer: %w", err)
 			break
 		}
 		// remove last bytes
 		length := len(bytes) - 1
 		if length > 0 {
 			bytes = bytes[:length]
-			fmt.Printf("Received data from peer: %s \n size: %d data: %s\n", name, length, string(bytes))
+			s.LogChan <- fmt.Sprintf("received data from peer: %s \n size: %d data: %s\n", name, length, string(bytes))
 			s.Clipboard.Write(bytes)
 		}
 	}
-	fmt.Println("Ending read stream for peer:", name)
+	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", name)
 }
 
 func (s *StreamHandler) CreateWriteData() {
@@ -65,23 +69,23 @@ func (s *StreamHandler) CreateWriteData() {
 			clipboardBytes = append(clipboardBytes, EOF)
 
 			for name, writer := range s.Writers {
-				fmt.Printf("Sending data to peer: %s \n size: %d data: %s\n", name, length, string(clipboardBytes))
+				s.LogChan <- fmt.Sprintf("sending data to peer: %s \n size: %d data: %s\n", name, length, string(clipboardBytes))
 
 				_, err := writer.Write(clipboardBytes)
 				if err != nil {
-					fmt.Println("Error writing buffer:", err)
+					s.ErrorChan <- fmt.Errorf("error writing to buffer: %w", err)
 					delete(s.Writers, name)
 				}
 
 				err = writer.Flush()
 				if err != nil {
-					fmt.Println("Error flush writing:", err)
+					s.ErrorChan <- fmt.Errorf("error flushing buffer: %w", err)
 					delete(s.Writers, name)
 				}
 			}
 		}
 	}
-	fmt.Println("Ending write streams")
+	s.LogChan <- fmt.Sprintf("ending write streams")
 }
 
 func (s *StreamHandler) AddWriter(writer *bufio.Writer, name string) {

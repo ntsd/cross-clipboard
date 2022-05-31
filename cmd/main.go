@@ -19,5 +19,16 @@ func main() {
 	}
 
 	cfg := utils.ParseFlags()
-	p2p.StartP2P(cfg)
+
+	logChan, errChan := p2p.StartP2P(cfg)
+
+	for {
+		select {
+		case log := <-logChan:
+			fmt.Println("log: ", log)
+
+		case err := <-errChan:
+			fmt.Println("err: ", err)
+		}
+	}
 }
