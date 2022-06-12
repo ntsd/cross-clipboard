@@ -30,22 +30,22 @@ package mobile
 
 import (
 	"github.com/ntsd/cross-clipboard/pkg/config"
-	"github.com/ntsd/cross-clipboard/pkg/p2p"
+	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
 )
 
-type CrossClipbard struct {
+type CrossClipbardMobile struct {
 }
 
-func (c *CrossClipbard) Start() {
+func (c *CrossClipbardMobile) Start() {
 	cfg := config.Config{
-		RendezvousString: "default-group",
-		ProtocolID:       "/cross-clipboard/0.0.1",
-		ListenHost:       "0.0.0.0",
-		ListenPort:       4001,
+		GroupName:  "default",
+		ProtocolID: "/cross-clipboard/0.0.1",
+		ListenHost: "0.0.0.0",
+		ListenPort: 4001,
 	}
-	p2p.StartP2P(cfg)
+	cross_clipboard.NewCrossClipboard(cfg)
 }
 
-func NewCrossClipbard() *CrossClipbard {
-	return &CrossClipbard{}
+func NewCrossClipbardMobile() *CrossClipbardMobile {
+	return &CrossClipbardMobile{}
 }

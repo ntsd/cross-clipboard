@@ -4,6 +4,7 @@ A multi device clipboard sharing over p2p in lan network.
 
 ## TODO
 
+- Terminal GUI
 - Verify Peer
 - E2E Encryption
 - Mobile Support
@@ -26,6 +27,8 @@ go install golang.org/x/mobile/cmd/gomobile@latest
 
 ## References
 
+<https://github.com/rivo/tview>
+
 <https://inblockchainwetrust.medium.com/running-go-from-android-ios-tutorial-7f1d456c5b0f>
 
 <https://github.com/golang/go/wiki/Mobile>
@@ -39,5 +42,3 @@ go install golang.org/x/mobile/cmd/gomobile@latest
 <https://www.sajalkayan.com/post/android-apps-golang.html>
 
 <https://sites.google.com/a/athaydes.com/renato-athaydes/posts/buildingamobilefrontendforagoapplicationusingflutter>
-
-<https://github.com/c-bata/go-prompt>

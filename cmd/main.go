@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ntsd/cross-clipboard/pkg/p2p"
+	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/utils"
 )
 
@@ -20,14 +20,21 @@ func main() {
 
 	cfg := utils.ParseFlags()
 
-	logChan, errChan := p2p.StartP2P(cfg)
+	crossClipboard, err := cross_clipboard.NewCrossClipboard(cfg)
+	if err != nil {
+		panic(err)
+	}
+	_ = crossClipboard
+
+	// view := ui.NewView()
+	// view.Start()
 
 	for {
 		select {
-		case log := <-logChan:
+		case log := <-crossClipboard.LogChan:
 			fmt.Println("log: ", log)
 
-		case err := <-errChan:
+		case err := <-crossClipboard.ErrChan:
 			fmt.Println("err: ", err)
 		}
 	}

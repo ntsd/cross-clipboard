@@ -6,21 +6,23 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/p2p"
 )
 
 const EOF byte = 0x00
 
 type StreamHandler struct {
 	Clipboard *clipboard.Clipboard
-	Writers   map[string]*bufio.Writer
+	Host      *p2p.Peer
+	Peers     map[string]*p2p.Peer
 	LogChan   chan string
 	ErrorChan chan error
 }
 
-func NewStreamHandler(cp *clipboard.Clipboard, logChan chan string, errorChan chan error) *StreamHandler {
+func NewStreamHandler(cp *clipboard.Clipboard, logChan chan string, errorChan chan error, peers map[string]*p2p.Peer) *StreamHandler {
 	s := &StreamHandler{
 		Clipboard: cp,
-		Writers:   make(map[string]*bufio.Writer),
+		Peers:     peers,
 		LogChan:   logChan,
 		ErrorChan: errorChan,
 	}
@@ -34,8 +36,9 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	// Create a buffer stream for non blocking read and write.
 	// rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
-	go s.CreateReadData(bufio.NewReader(stream), "host")
-	s.AddWriter(bufio.NewWriter(stream), "host")
+	// Create a new peer
+	// go s.CreateReadData(bufio.NewReader(stream), "host")
+	// s.AddWriter(bufio.NewWriter(stream), "host")
 
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
@@ -68,26 +71,22 @@ func (s *StreamHandler) CreateWriteData() {
 			// append EOF
 			clipboardBytes = append(clipboardBytes, EOF)
 
-			for name, writer := range s.Writers {
+			for name, p := range s.Peers {
 				s.LogChan <- fmt.Sprintf("sending data to peer: %s \n size: %d data: %s\n", name, length, string(clipboardBytes))
 
-				_, err := writer.Write(clipboardBytes)
+				_, err := p.Writer.Write(clipboardBytes)
 				if err != nil {
 					s.ErrorChan <- fmt.Errorf("error writing to buffer: %w", err)
-					delete(s.Writers, name)
+					delete(s.Peers, name)
 				}
 
-				err = writer.Flush()
+				err = p.Writer.Flush()
 				if err != nil {
 					s.ErrorChan <- fmt.Errorf("error flushing buffer: %w", err)
-					delete(s.Writers, name)
+					delete(s.Peers, name)
 				}
 			}
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending write streams")
-}
-
-func (s *StreamHandler) AddWriter(writer *bufio.Writer, name string) {
-	s.Writers[name] = writer
 }
