@@ -37,7 +37,7 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	// rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
 	// Create a new peer
-	// go s.CreateReadData(bufio.NewReader(stream), "host")
+	go s.CreateReadData(bufio.NewReader(stream), "host")
 	// s.AddWriter(bufio.NewWriter(stream), "host")
 
 	// 'stream' will stay open until you close it (or the other side closes it).

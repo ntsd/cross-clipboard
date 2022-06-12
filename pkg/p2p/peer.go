@@ -29,5 +29,7 @@ func NewPeer(
 	return &Peer{
 		AddressInfo: addrInfo,
 		Stream:      stream,
+		Reader:      bufio.NewReader(stream),
+		Writer:      bufio.NewWriter(stream),
 	}
 }
