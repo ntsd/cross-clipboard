@@ -81,7 +81,10 @@ func (s *StreamHandler) CreateWriteData() {
 				}
 			}
 
-			s.WriteData(s.HostWriter, clipboardBytes)
+			if s.HostWriter != nil {
+				s.LogChan <- fmt.Sprintf("sending data to host \n size: %d data: %s\n", length, string(clipboardBytes))
+				s.WriteData(s.HostWriter, clipboardBytes)
+			}
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending write streams")
