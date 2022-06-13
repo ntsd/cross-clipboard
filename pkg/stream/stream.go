@@ -12,11 +12,12 @@ import (
 const EOF byte = 0x00
 
 type StreamHandler struct {
-	Clipboard *clipboard.Clipboard
-	Host      *p2p.Peer
-	Peers     map[string]*p2p.Peer
-	LogChan   chan string
-	ErrorChan chan error
+	Clipboard  *clipboard.Clipboard
+	HostReader *bufio.Reader
+	HostWriter *bufio.Writer
+	Peers      map[string]*p2p.Peer
+	LogChan    chan string
+	ErrorChan  chan error
 }
 
 func NewStreamHandler(cp *clipboard.Clipboard, logChan chan string, errorChan chan error, peers map[string]*p2p.Peer) *StreamHandler {
@@ -37,8 +38,9 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	// rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
 
 	// Create a new peer
-	go s.CreateReadData(bufio.NewReader(stream), "host")
-	// s.AddWriter(bufio.NewWriter(stream), "host")
+	s.HostReader = bufio.NewReader(stream)
+	s.HostWriter = bufio.NewWriter(stream)
+	go s.CreateReadData(s.HostReader, "host")
 
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
@@ -73,20 +75,29 @@ func (s *StreamHandler) CreateWriteData() {
 
 			for name, p := range s.Peers {
 				s.LogChan <- fmt.Sprintf("sending data to peer: %s \n size: %d data: %s\n", name, length, string(clipboardBytes))
-
-				_, err := p.Writer.Write(clipboardBytes)
+				err := s.WriteData(p.Writer, clipboardBytes)
 				if err != nil {
-					s.ErrorChan <- fmt.Errorf("error writing to buffer: %w", err)
-					delete(s.Peers, name)
-				}
-
-				err = p.Writer.Flush()
-				if err != nil {
-					s.ErrorChan <- fmt.Errorf("error flushing buffer: %w", err)
 					delete(s.Peers, name)
 				}
 			}
+
+			s.WriteData(s.HostWriter, clipboardBytes)
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending write streams")
+}
+
+func (s *StreamHandler) WriteData(w *bufio.Writer, data []byte) error {
+	_, err := w.Write(data)
+	if err != nil {
+		s.ErrorChan <- fmt.Errorf("error writing to buffer: %w", err)
+		return err
+	}
+
+	err = w.Flush()
+	if err != nil {
+		s.ErrorChan <- fmt.Errorf("error flushing buffer: %w", err)
+		return err
+	}
+	return nil
 }
