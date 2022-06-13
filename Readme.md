@@ -8,6 +8,7 @@ A multi device clipboard sharing over p2p in lan network.
 - Verify Peer
 - E2E Encryption
 - Mobile Support
+- Image clipboard
 
 ## Technology
 

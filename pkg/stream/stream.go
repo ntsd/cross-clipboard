@@ -34,9 +34,6 @@ func NewStreamHandler(cp *clipboard.Clipboard, logChan chan string, errorChan ch
 func (s *StreamHandler) HandleStream(stream network.Stream) {
 	s.LogChan <- fmt.Sprintf("got a new stream from %s", stream.Conn().RemotePeer())
 
-	// Create a buffer stream for non blocking read and write.
-	// rw := bufio.NewReadWriter(bufio.NewReader(stream), bufio.NewWriter(stream))
-
 	// Create a new peer
 	s.HostReader = bufio.NewReader(stream)
 	s.HostWriter = bufio.NewWriter(stream)

@@ -21,7 +21,9 @@ import (
 type CrossClipboard struct {
 	Host   host.Host
 	Config config.Config
-	Peers  map[string]*p2p.Peer
+
+	Clipboards [][]byte
+	Peers      map[string]*p2p.Peer
 
 	LogChan chan string
 	ErrChan chan error
@@ -29,10 +31,11 @@ type CrossClipboard struct {
 
 func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 	cc := &CrossClipboard{
-		Config:  cfg,
-		Peers:   make(map[string]*p2p.Peer),
-		LogChan: make(chan string, 0),
-		ErrChan: make(chan error, 0),
+		Config:     cfg,
+		Clipboards: [][]byte{},
+		Peers:      make(map[string]*p2p.Peer),
+		LogChan:    make(chan string, 0),
+		ErrChan:    make(chan error, 0),
 	}
 
 	go func() {
@@ -59,7 +62,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		cc.Host = host
 
 		// initial clipboard and stream handler
-		cb := clipboard.NewClipboard()
+		cb := clipboard.NewClipboard(cc.Config, cc.Clipboards)
 		streamHandler := stream.NewStreamHandler(cb, cc.LogChan, cc.ErrChan, cc.Peers)
 
 		// Set a function as stream handler.
