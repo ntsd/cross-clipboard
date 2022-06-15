@@ -6,11 +6,11 @@ import (
 	"github.com/rivo/tview"
 )
 
-func NewConfigPage() *Page {
+func NewLogPage() *Page {
 	textView := tview.NewTextView()
-	fmt.Fprint(textView, "Config Page")
+	fmt.Fprint(textView, "Log Page")
 	return &Page{
-		Title:   "Config",
+		Title:   "Log",
 		Content: textView,
 	}
 }

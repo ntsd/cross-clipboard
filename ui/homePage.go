@@ -1,13 +1,23 @@
 package ui
 
 import (
-	"fmt"
-
 	"github.com/rivo/tview"
 )
 
-func HomePage(prevPage func(), nextPage func()) (title string, content tview.Primitive) {
-	textView := tview.NewTextView()
-	fmt.Fprint(textView, "Home Page")
-	return "Home", textView
+func ClipboardBox() tview.Primitive {
+	return tview.NewBox().SetBorder(true).SetTitle("clipboards")
+}
+
+func DevicesBox() tview.Primitive {
+	return tview.NewBox().SetBorder(true).SetTitle("devices")
+}
+
+func NewHomePage() *Page {
+	flex := tview.NewFlex().
+		AddItem(ClipboardBox(), 0, 2, true).
+		AddItem(DevicesBox(), 30, 1, false)
+	return &Page{
+		Title:   "Home",
+		Content: flex,
+	}
 }

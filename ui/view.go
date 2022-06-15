@@ -17,22 +17,23 @@ type View struct {
 
 	info      *tview.TextView
 	basePages *tview.Pages
-	pages     []Page
+	pages     []*Page
 }
 
 func NewView(cc *cross_clipboard.CrossClipboard) *View {
-	view := &View{
+	v := &View{
 		CrossClipboard: cc,
 		layout:         tview.NewFlex(),
 		info:           tview.NewTextView(),
 		basePages:      tview.NewPages(),
-		pages: []Page{
-			HomePage,
-			ConfigPage,
+		pages: []*Page{
+			NewHomePage(),
+			NewConfigPage(),
+			NewLogPage(),
 		},
 	}
 
-	return view
+	return v
 }
 
 func (v *View) Start() {
@@ -51,33 +52,16 @@ func (v *View) Start() {
 		AddItem(v.basePages, 0, 1, true).
 		AddItem(v.info, 1, 1, false)
 
-	// Create pages and controller
-	goToPage := func(pageNum int) {
-		v.info.Highlight(strconv.Itoa(pageNum)).
-			ScrollToHighlight()
-	}
-	previousPage := func() {
-		page, _ := strconv.Atoi(v.info.GetHighlights()[0])
-		page = (page - 1 + len(v.pages)) % len(v.pages)
-		v.info.Highlight(strconv.Itoa(page)).
-			ScrollToHighlight()
-	}
-	nextPage := func() {
-		currentPage, _ := strconv.Atoi(v.info.GetHighlights()[0])
-		newPage := (currentPage + 1) % len(v.pages)
-		v.info.Highlight(strconv.Itoa(newPage)).
-			ScrollToHighlight()
-	}
+	// Create pages
 	for index, page := range v.pages {
-		title, primitive := page(previousPage, nextPage)
-		v.basePages.AddPage(strconv.Itoa(index), primitive, true, index == 0)
-		fmt.Fprintf(v.info, `%d ["%d"][darkcyan]%s[white][""]  `, index+1, index, title)
+		v.basePages.AddPage(strconv.Itoa(index), page.Content, true, index == 0)
+		fmt.Fprintf(v.info, `%d ["%d"][darkcyan]%s[white][""]  `, index+1, index, page.Title)
 	}
 	v.info.Highlight("0")
 
 	v.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if unicode.IsDigit(event.Rune()) {
-			goToPage(int(event.Rune() - '1'))
+			v.goToPage(int(event.Rune() - '1'))
 		}
 		return event
 	})
@@ -92,4 +76,23 @@ func (v *View) Start() {
 
 func (v *View) Stop() {
 	v.app.Stop()
+}
+
+func (v *View) goToPage(pageNum int) {
+	v.info.Highlight(strconv.Itoa(pageNum)).
+		ScrollToHighlight()
+}
+
+func (v *View) previousPage() {
+	page, _ := strconv.Atoi(v.info.GetHighlights()[0])
+	page = (page - 1 + len(v.pages)) % len(v.pages)
+	v.info.Highlight(strconv.Itoa(page)).
+		ScrollToHighlight()
+}
+
+func (v *View) nextPage() {
+	currentPage, _ := strconv.Atoi(v.info.GetHighlights()[0])
+	newPage := (currentPage + 1) % len(v.pages)
+	v.info.Highlight(strconv.Itoa(newPage)).
+		ScrollToHighlight()
 }
