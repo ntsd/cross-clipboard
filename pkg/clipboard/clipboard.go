@@ -32,7 +32,7 @@ func NewClipboard(cfg config.Config, clipboards [][]byte) *Clipboard {
 	}
 }
 
-func limitAppendRotate[T any](limit int, slice []T, new T) []T {
+func limitAppend[T any](limit int, slice []T, new T) []T {
 	l := len(slice)
 	if l >= limit {
 		slice = slice[1:]
@@ -43,7 +43,7 @@ func limitAppendRotate[T any](limit int, slice []T, new T) []T {
 
 func (c *Clipboard) Write(newClipboard []byte) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
-		limitAppendRotate(c.Config.MaxHistory, c.Clipboards, newClipboard)
+		limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
 		clipboard.Write(clipboard.FmtText, newClipboard)
 	}
 }

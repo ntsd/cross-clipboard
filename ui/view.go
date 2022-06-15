@@ -1,23 +1,35 @@
 package ui
 
 import (
+	"fmt"
+	"strconv"
+	"unicode"
+
 	"github.com/gdamore/tcell/v2"
+	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
 	"github.com/rivo/tview"
 )
 
 type View struct {
-	app    *tview.Application
-	layout *tview.Grid
+	CrossClipboard *cross_clipboard.CrossClipboard
+	app            *tview.Application
+	layout         *tview.Flex
 
+	info      *tview.TextView
 	basePages *tview.Pages
-	mainPage  tview.Primitive
+	pages     []Page
 }
 
-func NewView() *View {
+func NewView(cc *cross_clipboard.CrossClipboard) *View {
 	view := &View{
-		layout:    newGrid(),
-		basePages: tview.NewPages(),
-		mainPage:  mainPageGrid(),
+		CrossClipboard: cc,
+		layout:         tview.NewFlex(),
+		info:           tview.NewTextView(),
+		basePages:      tview.NewPages(),
+		pages: []Page{
+			HomePage,
+			ConfigPage,
+		},
 	}
 
 	return view
@@ -26,21 +38,53 @@ func NewView() *View {
 func (v *View) Start() {
 	v.app = tview.NewApplication()
 
-	v.app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
-		screen.Clear()
-		return false
-	})
+	// Set bottom info bar
+	v.info.SetDynamicColors(true).
+		SetRegions(true).
+		SetWrap(false).
+		SetHighlightedFunc(func(added, removed, remaining []string) {
+			v.basePages.SwitchToPage(added[0])
+		})
+
+	// Set layout with basePages and info
+	v.layout.SetDirection(tview.FlexRow).
+		AddItem(v.basePages, 0, 1, true).
+		AddItem(v.info, 1, 1, false)
+
+	// Create pages and controller
+	goToPage := func(pageNum int) {
+		v.info.Highlight(strconv.Itoa(pageNum)).
+			ScrollToHighlight()
+	}
+	previousPage := func() {
+		page, _ := strconv.Atoi(v.info.GetHighlights()[0])
+		page = (page - 1 + len(v.pages)) % len(v.pages)
+		v.info.Highlight(strconv.Itoa(page)).
+			ScrollToHighlight()
+	}
+	nextPage := func() {
+		currentPage, _ := strconv.Atoi(v.info.GetHighlights()[0])
+		newPage := (currentPage + 1) % len(v.pages)
+		v.info.Highlight(strconv.Itoa(newPage)).
+			ScrollToHighlight()
+	}
+	for index, page := range v.pages {
+		title, primitive := page(previousPage, nextPage)
+		v.basePages.AddPage(strconv.Itoa(index), primitive, true, index == 0)
+		fmt.Fprintf(v.info, `%d ["%d"][darkcyan]%s[white][""]  `, index+1, index, title)
+	}
+	v.info.Highlight("0")
 
 	v.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if unicode.IsDigit(event.Rune()) {
+			goToPage(int(event.Rune() - '1'))
+		}
 		return event
 	})
 
-	v.basePages.AddPage("main-page", v.mainPage, true, true)
-	v.layout.AddItem(v.basePages, 1, 0, 1, 1, 0, 0, true)
-
 	if err := v.app.
 		SetRoot(v.layout, true).
-		SetFocus(v.layout).
+		EnableMouse(true).
 		Run(); err != nil {
 		panic(err)
 	}
@@ -48,35 +92,4 @@ func (v *View) Start() {
 
 func (v *View) Stop() {
 	v.app.Stop()
-}
-
-func newGrid() *tview.Grid {
-	return tview.NewGrid().
-		SetRows(1, 0).
-		SetColumns(0)
-}
-
-func mainPageGrid() *tview.Grid {
-	newPrimitive := func(text string) tview.Primitive {
-		return tview.NewTextView().
-			SetTextAlign(tview.AlignCenter).
-			SetText(text)
-	}
-
-	menu := newPrimitive("Menu")
-	main := newPrimitive("Main content")
-
-	grid := tview.NewGrid().
-		SetRows(2, 1).
-		SetBorders(true)
-
-	// Layout for screens narrower than 100 cells (menu and side bar are hidden).
-	grid.AddItem(menu, 0, 0, 0, 0, 0, 0, false).
-		AddItem(main, 1, 0, 1, 3, 0, 0, false)
-
-	// Layout for screens wider than 100 cells.
-	grid.AddItem(menu, 1, 0, 1, 1, 0, 100, false).
-		AddItem(main, 1, 1, 1, 1, 0, 100, false)
-
-	return grid
 }

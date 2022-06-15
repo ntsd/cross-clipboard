@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestLimitAppendRotate(t *testing.T) {
+func TestLimitAppend(t *testing.T) {
 	tests := []struct {
 		limit  int
 		arr    [][]byte
@@ -27,7 +27,7 @@ func TestLimitAppendRotate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		got := limitAppendRotate(test.limit, test.arr, test.new)
+		got := limitAppend(test.limit, test.arr, test.new)
 
 		if !reflect.DeepEqual(got, test.result) {
 			t.Errorf("got %q, wanted %q", got, test.result)
