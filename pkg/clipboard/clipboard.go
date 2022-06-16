@@ -10,14 +10,15 @@ import (
 )
 
 type Clipboard struct {
-	Config           config.Config
-	ReadChannel      <-chan []byte
-	Clipboards       [][]byte
-	CurrentClipboard []byte
-	mu               sync.RWMutex
+	Config            config.Config
+	ReadChannel       <-chan []byte
+	Clipboards        [][]byte
+	ClipboardsChannel chan [][]byte
+	CurrentClipboard  []byte
+	mu                sync.RWMutex
 }
 
-func NewClipboard(cfg config.Config, clipboards [][]byte) *Clipboard {
+func NewClipboard(cfg config.Config) *Clipboard {
 	err := clipboard.Init()
 	if err != nil {
 		panic(err)
@@ -28,7 +29,7 @@ func NewClipboard(cfg config.Config, clipboards [][]byte) *Clipboard {
 	return &Clipboard{
 		Config:      cfg,
 		ReadChannel: ch,
-		Clipboards:  clipboards,
+		Clipboards:  [][]byte{},
 	}
 }
 
@@ -43,7 +44,8 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 
 func (c *Clipboard) Write(newClipboard []byte) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
-		limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
+		c.Clipboards = limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
+		c.ClipboardsChannel <- c.Clipboards
 		clipboard.Write(clipboard.FmtText, newClipboard)
 	}
 }

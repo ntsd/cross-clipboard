@@ -53,7 +53,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 		length := len(bytes) - 1
 		if length > 0 {
 			bytes = bytes[:length]
-			s.LogChan <- fmt.Sprintf("received data from peer: %s \n size: %d data: %s\n", name, length, string(bytes))
+			s.LogChan <- fmt.Sprintf("received data from peer: %s size: %d data: %s", name, length, string(bytes))
 			s.Clipboard.Write(bytes)
 		}
 	}
@@ -71,7 +71,7 @@ func (s *StreamHandler) CreateWriteData() {
 			clipboardBytes = append(clipboardBytes, EOF)
 
 			for name, p := range s.Peers {
-				s.LogChan <- fmt.Sprintf("sending data to peer: %s \n size: %d data: %s\n", name, length, string(clipboardBytes))
+				s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
 				err := s.WriteData(p.Writer, clipboardBytes)
 				if err != nil {
 					delete(s.Peers, name)
@@ -79,7 +79,7 @@ func (s *StreamHandler) CreateWriteData() {
 			}
 
 			if s.HostWriter != nil {
-				s.LogChan <- fmt.Sprintf("sending data to host \n size: %d data: %s\n", length, string(clipboardBytes))
+				s.LogChan <- fmt.Sprintf("sending data to host size: %d data: %s", length, string(clipboardBytes))
 				s.WriteData(s.HostWriter, clipboardBytes)
 			}
 		}

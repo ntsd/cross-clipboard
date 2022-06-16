@@ -26,11 +26,12 @@ func NewView(cc *cross_clipboard.CrossClipboard) *View {
 		layout:         tview.NewFlex(),
 		info:           tview.NewTextView(),
 		basePages:      tview.NewPages(),
-		pages: []*Page{
-			NewHomePage(),
-			NewConfigPage(),
-			NewLogPage(),
-		},
+	}
+
+	v.pages = []*Page{
+		v.NewHomePage(),
+		v.NewConfigPage(),
+		v.NewLogPage(),
 	}
 
 	return v

@@ -22,8 +22,9 @@ type CrossClipboard struct {
 	Host   host.Host
 	Config config.Config
 
-	Clipboards [][]byte
-	Peers      map[string]*p2p.Peer
+	Clipboard    *clipboard.Clipboard
+	Peers        map[string]*p2p.Peer
+	PeersChannel chan map[string]*p2p.Peer
 
 	LogChan chan string
 	ErrChan chan error
@@ -31,12 +32,16 @@ type CrossClipboard struct {
 
 func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 	cc := &CrossClipboard{
-		Config:     cfg,
-		Clipboards: [][]byte{},
-		Peers:      make(map[string]*p2p.Peer),
-		LogChan:    make(chan string, 0),
-		ErrChan:    make(chan error, 0),
+		Config:       cfg,
+		Peers:        make(map[string]*p2p.Peer),
+		LogChan:      make(chan string),
+		ErrChan:      make(chan error),
+		PeersChannel: make(chan map[string]*p2p.Peer),
 	}
+
+	// initial clipboard and stream handler
+	cb := clipboard.NewClipboard(cc.Config)
+	cc.Clipboard = cb
 
 	go func() {
 		ctx := context.Background()
@@ -49,7 +54,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 
 		// 0.0.0.0 will listen on any interface device.
 		sourceMultiAddr, _ := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/%s/tcp/%d", cc.Config.ListenHost, cc.Config.ListenPort))
-		cc.LogChan <- fmt.Sprintf("[*] listening on: %s with port %d\n", cc.Config.ListenHost, cc.Config.ListenPort)
+		cc.LogChan <- fmt.Sprintf("[*] listening on: %s with port %d", cc.Config.ListenHost, cc.Config.ListenPort)
 
 		// libp2p.New constructs a new libp2p Host.
 		host, err := libp2p.New(
@@ -61,14 +66,12 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		}
 		cc.Host = host
 
-		// initial clipboard and stream handler
-		cb := clipboard.NewClipboard(cc.Config, cc.Clipboards)
-		streamHandler := stream.NewStreamHandler(cb, cc.LogChan, cc.ErrChan, cc.Peers)
+		streamHandler := stream.NewStreamHandler(cc.Clipboard, cc.LogChan, cc.ErrChan, cc.Peers)
 
 		// Set a function as stream handler.
 		// This function is called when a peer initiates a connection and starts a stream with this peer.
 		cc.Host.SetStreamHandler(protocol.ID(cc.Config.ProtocolID), streamHandler.HandleStream)
-		cc.LogChan <- fmt.Sprintf("[*] your multiaddress is: /ip4/%s/tcp/%v/p2p/%s\n", cc.Config.ListenHost, cc.Config.ListenPort, host.ID().Pretty())
+		cc.LogChan <- fmt.Sprintf("[*] your multiaddress is: /ip4/%s/tcp/%v/p2p/%s", cc.Config.ListenHost, cc.Config.ListenPort, host.ID().Pretty())
 
 		peerInfoChan, err := discovery.InitMultiMDNS(cc.Host, cc.Config.GroupName, cc.LogChan)
 		if err != nil {

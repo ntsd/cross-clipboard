@@ -6,7 +6,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func NewConfigPage() *Page {
+func (v *View) NewConfigPage() *Page {
 	textView := tview.NewTextView()
 	fmt.Fprint(textView, "Config Page")
 	return &Page{
