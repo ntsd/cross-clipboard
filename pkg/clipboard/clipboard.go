@@ -27,9 +27,10 @@ func NewClipboardManager(cfg config.Config) *ClipboardManager {
 	ch := clipboard.Watch(context.Background(), clipboard.FmtText)
 
 	return &ClipboardManager{
-		Config:      cfg,
-		ReadChannel: ch,
-		Clipboards:  [][]byte{},
+		Config:            cfg,
+		ReadChannel:       ch,
+		ClipboardsChannel: make(chan [][]byte),
+		Clipboards:        [][]byte{},
 	}
 }
 
