@@ -10,14 +10,15 @@ func ClipboardBox(cc *cross_clipboard.CrossClipboard) tview.Primitive {
 		SetFixed(1, 1)
 
 	go func() {
-		for clipboards := range cc.Clipboard.ClipboardsChannel {
+		for clipboards := range cc.ClipboardManager.ClipboardsChannel {
+			table.Clear()
 			for i, clipboard := range clipboards {
 				table.SetCell(i, 0, tview.NewTableCell(string(clipboard)))
 			}
 		}
 	}()
 
-	table.SetBorder(true).SetTitle("clipboards")
+	// table.SetBorder(true).SetTitle("clipboards")
 
 	return table
 }

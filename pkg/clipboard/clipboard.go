@@ -9,7 +9,7 @@ import (
 	"golang.design/x/clipboard"
 )
 
-type Clipboard struct {
+type ClipboardManager struct {
 	Config            config.Config
 	ReadChannel       <-chan []byte
 	Clipboards        [][]byte
@@ -18,7 +18,7 @@ type Clipboard struct {
 	mu                sync.RWMutex
 }
 
-func NewClipboard(cfg config.Config) *Clipboard {
+func NewClipboardManager(cfg config.Config) *ClipboardManager {
 	err := clipboard.Init()
 	if err != nil {
 		panic(err)
@@ -26,7 +26,7 @@ func NewClipboard(cfg config.Config) *Clipboard {
 
 	ch := clipboard.Watch(context.Background(), clipboard.FmtText)
 
-	return &Clipboard{
+	return &ClipboardManager{
 		Config:      cfg,
 		ReadChannel: ch,
 		Clipboards:  [][]byte{},
@@ -42,7 +42,7 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 	return slice
 }
 
-func (c *Clipboard) Write(newClipboard []byte) {
+func (c *ClipboardManager) Write(newClipboard []byte) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
 		c.Clipboards = limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
 		c.ClipboardsChannel <- c.Clipboards

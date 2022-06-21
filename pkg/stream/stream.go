@@ -12,20 +12,20 @@ import (
 const EOF byte = 0x00
 
 type StreamHandler struct {
-	Clipboard  *clipboard.Clipboard
-	HostReader *bufio.Reader
-	HostWriter *bufio.Writer
-	Peers      map[string]*p2p.Peer
-	LogChan    chan string
-	ErrorChan  chan error
+	ClipboardManager *clipboard.ClipboardManager
+	HostReader       *bufio.Reader
+	HostWriter       *bufio.Writer
+	Peers            map[string]*p2p.Peer
+	LogChan          chan string
+	ErrorChan        chan error
 }
 
-func NewStreamHandler(cp *clipboard.Clipboard, logChan chan string, errorChan chan error, peers map[string]*p2p.Peer) *StreamHandler {
+func NewStreamHandler(cp *clipboard.ClipboardManager, logChan chan string, errorChan chan error, peers map[string]*p2p.Peer) *StreamHandler {
 	s := &StreamHandler{
-		Clipboard: cp,
-		Peers:     peers,
-		LogChan:   logChan,
-		ErrorChan: errorChan,
+		ClipboardManager: cp,
+		Peers:            peers,
+		LogChan:          logChan,
+		ErrorChan:        errorChan,
 	}
 	go s.CreateWriteData()
 	return s
@@ -54,18 +54,18 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 		if length > 0 {
 			bytes = bytes[:length]
 			s.LogChan <- fmt.Sprintf("received data from peer: %s size: %d data: %s", name, length, string(bytes))
-			s.Clipboard.Write(bytes)
+			s.ClipboardManager.Write(bytes)
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", name)
 }
 
 func (s *StreamHandler) CreateWriteData() {
-	for clipboardBytes := range s.Clipboard.ReadChannel {
+	for clipboardBytes := range s.ClipboardManager.ReadChannel {
 		length := len(clipboardBytes)
 		if length > 0 {
 			// set current clipbaord to avoid recursion
-			s.Clipboard.CurrentClipboard = clipboardBytes
+			s.ClipboardManager.CurrentClipboard = clipboardBytes
 
 			// append EOF
 			clipboardBytes = append(clipboardBytes, EOF)

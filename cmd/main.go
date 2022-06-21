@@ -7,6 +7,7 @@ import (
 
 	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/utils"
+	"github.com/ntsd/cross-clipboard/ui"
 )
 
 func main() {
@@ -26,16 +27,16 @@ func main() {
 	}
 	_ = crossClipboard
 
-	// view := ui.NewView(crossClipboard)
-	// view.Start()
+	view := ui.NewView(crossClipboard)
+	view.Start()
 
-	for {
-		select {
-		case log := <-crossClipboard.LogChan:
-			fmt.Println("log: ", log)
+	// for {
+	// 	select {
+	// 	case log := <-crossClipboard.LogChan:
+	// 		fmt.Println("log: ", log)
 
-		case err := <-crossClipboard.ErrChan:
-			fmt.Println("err: ", err)
-		}
-	}
+	// 	case err := <-crossClipboard.ErrChan:
+	// 		fmt.Println("err: ", err)
+	// 	}
+	// }
 }

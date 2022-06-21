@@ -22,9 +22,9 @@ type CrossClipboard struct {
 	Host   host.Host
 	Config config.Config
 
-	Clipboard    *clipboard.Clipboard
-	Peers        map[string]*p2p.Peer
-	PeersChannel chan map[string]*p2p.Peer
+	ClipboardManager *clipboard.ClipboardManager
+	Peers            map[string]*p2p.Peer
+	PeersChannel     chan map[string]*p2p.Peer
 
 	LogChan chan string
 	ErrChan chan error
@@ -40,8 +40,8 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 	}
 
 	// initial clipboard and stream handler
-	cb := clipboard.NewClipboard(cc.Config)
-	cc.Clipboard = cb
+	cb := clipboard.NewClipboardManager(cc.Config)
+	cc.ClipboardManager = cb
 
 	go func() {
 		ctx := context.Background()
@@ -66,7 +66,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		}
 		cc.Host = host
 
-		streamHandler := stream.NewStreamHandler(cc.Clipboard, cc.LogChan, cc.ErrChan, cc.Peers)
+		streamHandler := stream.NewStreamHandler(cc.ClipboardManager, cc.LogChan, cc.ErrChan, cc.Peers)
 
 		// Set a function as stream handler.
 		// This function is called when a peer initiates a connection and starts a stream with this peer.
