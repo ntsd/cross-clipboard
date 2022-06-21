@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strconv"
+
 	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
 	"github.com/rivo/tview"
 )
@@ -13,12 +15,14 @@ func ClipboardBox(cc *cross_clipboard.CrossClipboard) tview.Primitive {
 		for clipboards := range cc.ClipboardManager.ClipboardsChannel {
 			table.Clear()
 			for i, clipboard := range clipboards {
-				table.SetCell(i, 0, tview.NewTableCell(string(clipboard)))
+				table.SetCell(i, 0, tview.NewTableCell(string(clipboard.Text)))
+				table.SetCell(i, 1, tview.NewTableCell(strconv.Itoa(clipboard.Size)))
+				table.SetCell(i, 2, tview.NewTableCell(clipboard.Time.String()))
 			}
 		}
 	}()
 
-	// table.SetBorder(true).SetTitle("clipboards")
+	table.SetBorder(true).SetTitle("clipboards")
 
 	return table
 }

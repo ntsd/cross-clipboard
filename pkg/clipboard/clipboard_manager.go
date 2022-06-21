@@ -12,8 +12,8 @@ import (
 type ClipboardManager struct {
 	Config            config.Config
 	ReadChannel       <-chan []byte
-	Clipboards        [][]byte
-	ClipboardsChannel chan [][]byte
+	Clipboards        []Clipboard
+	ClipboardsChannel chan []Clipboard
 	CurrentClipboard  []byte
 	mu                sync.RWMutex
 }
@@ -29,8 +29,8 @@ func NewClipboardManager(cfg config.Config) *ClipboardManager {
 	return &ClipboardManager{
 		Config:            cfg,
 		ReadChannel:       ch,
-		ClipboardsChannel: make(chan [][]byte),
-		Clipboards:        [][]byte{},
+		ClipboardsChannel: make(chan []Clipboard),
+		Clipboards:        []Clipboard{},
 	}
 }
 
@@ -43,10 +43,11 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 	return slice
 }
 
-func (c *ClipboardManager) Write(newClipboard []byte) {
-	if bytes.Compare(c.CurrentClipboard, newClipboard) != 0 {
+func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
+	if bytes.Compare(c.CurrentClipboard, newClipboard.Text) != 0 {
+		c.CurrentClipboard = newClipboard.Text
 		c.Clipboards = limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
 		c.ClipboardsChannel <- c.Clipboards
-		clipboard.Write(clipboard.FmtText, newClipboard)
+		clipboard.Write(clipboard.FmtText, newClipboard.Text)
 	}
 }

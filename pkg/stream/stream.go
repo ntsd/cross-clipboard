@@ -3,6 +3,7 @@ package stream
 import (
 	"bufio"
 	"fmt"
+	"time"
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
@@ -54,7 +55,11 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 		if length > 0 {
 			bytes = bytes[:length]
 			s.LogChan <- fmt.Sprintf("received data from peer: %s size: %d data: %s", name, length, string(bytes))
-			s.ClipboardManager.Write(bytes)
+			s.ClipboardManager.AddClipboard(clipboard.Clipboard{
+				Text: bytes,
+				Size: length,
+				Time: time.Now(),
+			})
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", name)
