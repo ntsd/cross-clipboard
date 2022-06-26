@@ -46,11 +46,10 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 	return slice
 }
 
-// WriteClipboard write os clipbaord and add history
+// WriteClipboard write os clipbaord
 func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard.Text) != 0 {
 		clipboard.Write(clipboard.FmtText, newClipboard.Text)
-		c.AddClipboard(newClipboard)
 	}
 }
 
