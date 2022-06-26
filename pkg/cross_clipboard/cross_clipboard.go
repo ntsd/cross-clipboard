@@ -18,6 +18,7 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
 )
 
+// CrossClipboard cross clipbaord struct
 type CrossClipboard struct {
 	Host   host.Host
 	Config config.Config
@@ -30,6 +31,7 @@ type CrossClipboard struct {
 	ErrChan chan error
 }
 
+// NewCrossClipboard initial cross clipbaord
 func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 	cc := &CrossClipboard{
 		Config:       cfg,
@@ -39,7 +41,6 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		PeersChannel: make(chan map[string]*p2p.Peer),
 	}
 
-	// initial clipboard and stream handler
 	cb := clipboard.NewClipboardManager(cc.Config)
 	cc.ClipboardManager = cb
 

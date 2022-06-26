@@ -9,13 +9,14 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 )
 
+// DiscoveryNotifee noti struct when discover a new peer
 type DiscoveryNotifee struct {
 	PeerHost host.Host
 	PeerChan chan peer.AddrInfo
 	LogChan  chan string
 }
 
-//interface to be called when new  peer is found
+// HandlePeerFound interface to be called when new  peer is found
 func (n *DiscoveryNotifee) HandlePeerFound(peerInfo peer.AddrInfo) {
 	n.LogChan <- fmt.Sprintf("discovered: %s", peerInfo)
 	if n.PeerHost.ID().Pretty() != peerInfo.ID.Pretty() {
@@ -23,7 +24,7 @@ func (n *DiscoveryNotifee) HandlePeerFound(peerInfo peer.AddrInfo) {
 	}
 }
 
-//Initialize the MDNS service
+// InitMultiMDNS initialize the MDNS service
 func InitMultiMDNS(peerhost host.Host, rendezvous string, logchan chan string) (chan peer.AddrInfo, error) {
 	// register with service so that we get notified about peer discovery
 	n := &DiscoveryNotifee{

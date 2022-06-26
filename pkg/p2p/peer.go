@@ -7,6 +7,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 )
 
+// Peer struct for peer
 type Peer struct {
 	AddressInfo peer.AddrInfo
 	OS          string
@@ -22,6 +23,7 @@ type Peer struct {
 	ErrChan chan error
 }
 
+// NewPeer initial new peer
 func NewPeer(
 	addrInfo peer.AddrInfo,
 	stream network.Stream,

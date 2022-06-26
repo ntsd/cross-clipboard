@@ -12,6 +12,7 @@ import (
 
 const EOF byte = 0x00
 
+// StreamHandler struct for stream handler
 type StreamHandler struct {
 	ClipboardManager *clipboard.ClipboardManager
 	HostReader       *bufio.Reader
@@ -21,6 +22,7 @@ type StreamHandler struct {
 	ErrorChan        chan error
 }
 
+// NewStreamHandler initial new stream handler
 func NewStreamHandler(cp *clipboard.ClipboardManager, logChan chan string, errorChan chan error, peers map[string]*p2p.Peer) *StreamHandler {
 	s := &StreamHandler{
 		ClipboardManager: cp,
@@ -32,6 +34,7 @@ func NewStreamHandler(cp *clipboard.ClipboardManager, logChan chan string, error
 	return s
 }
 
+// HandleStream handler when a peer connect this host
 func (s *StreamHandler) HandleStream(stream network.Stream) {
 	s.LogChan <- fmt.Sprintf("got a new stream from %s", stream.Conn().RemotePeer())
 
@@ -43,6 +46,7 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
 
+// CreateReadData craete a new read streaming for host or peer
 func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 	for {
 		bytes, err := reader.ReadBytes(EOF)
@@ -55,7 +59,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 		if length > 0 {
 			bytes = bytes[:length]
 			s.LogChan <- fmt.Sprintf("received data from peer: %s size: %d data: %s", name, length, string(bytes))
-			s.ClipboardManager.AddClipboard(clipboard.Clipboard{
+			s.ClipboardManager.WriteClipboard(clipboard.Clipboard{
 				Text: bytes,
 				Size: length,
 				Time: time.Now(),
@@ -65,12 +69,17 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", name)
 }
 
+// CreateWriteData handle clipboad channel and write to all peers and host
 func (s *StreamHandler) CreateWriteData() {
 	for clipboardBytes := range s.ClipboardManager.ReadChannel {
 		length := len(clipboardBytes)
 		if length > 0 {
-			// set current clipbaord to avoid recursion
-			s.ClipboardManager.CurrentClipboard = clipboardBytes
+			// set current clipbaord to avoid recursive
+			s.ClipboardManager.AddClipboard(clipboard.Clipboard{
+				Text: clipboardBytes,
+				Size: length,
+				Time: time.Now(),
+			})
 
 			// append EOF
 			clipboardBytes = append(clipboardBytes, EOF)
@@ -79,6 +88,7 @@ func (s *StreamHandler) CreateWriteData() {
 				s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
 				err := s.WriteData(p.Writer, clipboardBytes)
 				if err != nil {
+					s.LogChan <- fmt.Sprintf("ending write stream %s", name)
 					delete(s.Peers, name)
 				}
 			}
@@ -92,6 +102,7 @@ func (s *StreamHandler) CreateWriteData() {
 	s.LogChan <- fmt.Sprintf("ending write streams")
 }
 
+// WriteData write data to the writer
 func (s *StreamHandler) WriteData(w *bufio.Writer, data []byte) error {
 	_, err := w.Write(data)
 	if err != nil {

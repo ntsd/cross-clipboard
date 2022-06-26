@@ -1,5 +1,6 @@
 package config
 
+// Config config struct for cross clipbaord
 type Config struct {
 	GroupName  string
 	ProtocolID string
