@@ -45,9 +45,10 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 
 func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard.Text) != 0 {
+		clipboard.Write(clipboard.FmtText, newClipboard.Text)
+		// update clipboard
 		c.CurrentClipboard = newClipboard.Text
 		c.Clipboards = limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
 		c.ClipboardsChannel <- c.Clipboards
-		clipboard.Write(clipboard.FmtText, newClipboard.Text)
 	}
 }

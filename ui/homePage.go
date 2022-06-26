@@ -3,6 +3,7 @@ package ui
 import (
 	"strconv"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
 	"github.com/rivo/tview"
 )
@@ -14,10 +15,18 @@ func ClipboardBox(cc *cross_clipboard.CrossClipboard) tview.Primitive {
 	go func() {
 		for clipboards := range cc.ClipboardManager.ClipboardsChannel {
 			table.Clear()
+			table.SetCell(0, 0, tview.NewTableCell("text").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+			table.SetCell(0, 1, tview.NewTableCell("size").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignCenter))
+			table.SetCell(0, 2, tview.NewTableCell("time").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignRight))
 			for i, clipboard := range clipboards {
-				table.SetCell(i, 0, tview.NewTableCell(string(clipboard.Text)))
-				table.SetCell(i, 1, tview.NewTableCell(strconv.Itoa(clipboard.Size)))
-				table.SetCell(i, 2, tview.NewTableCell(clipboard.Time.String()))
+				row := i + 1
+				if clipboard.Size > 50 {
+					table.SetCell(row, 0, tview.NewTableCell(string(clipboard.Text[:50])))
+				} else {
+					table.SetCell(row, 0, tview.NewTableCell(string(clipboard.Text)))
+				}
+				table.SetCell(row, 1, tview.NewTableCell(strconv.Itoa(clipboard.Size)))
+				table.SetCell(row, 2, tview.NewTableCell(clipboard.Time.Format("15:04:05")))
 			}
 		}
 	}()
