@@ -47,7 +47,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 	go func() {
 		ctx := context.Background()
 
-		// Creates a new ECDSA key pair for this host.
+		// Creates a new ECDSA key pair
 		prvKey, _, err := crypto.GenerateKeyPairWithReader(crypto.ECDSA, 2048, rand.Reader)
 		if err != nil {
 			cc.ErrChan <- xerror.NewFatalError(err)
