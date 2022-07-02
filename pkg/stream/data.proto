@@ -1,0 +1,27 @@
+syntax = "proto3";
+package stream;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/ntsd/cross-clipboard/pkg/stream";
+
+message PeerData {
+  enum OS {
+    LINUX = 0;
+    DARWIN = 1;
+    WINDOWS = 2;
+    ANDROID = 3;
+    IOS = 4;
+    OTHER = 5;
+  }
+  
+  OS os = 1;
+  bytes public_key = 2;
+}
+
+message ClipboardData {
+  bool is_image = 1;
+  fixed32 data_size = 2;
+  bytes data = 3;
+  google.protobuf.Timestamp time = 4;
+}

@@ -15,6 +15,7 @@ A multi device clipboard sharing over p2p in lan network.
 - Go
 - libp2p
 - Multicast DNS (mDNS)
+- [Gogo Protobuf](https://github.com/gogo/protobuf)
 
 ## Installation
 
@@ -25,6 +26,10 @@ A multi device clipboard sharing over p2p in lan network.
 ```shell
 go install golang.org/x/mobile/cmd/gomobile@latest
 ```
+
+## Proto gen
+
+`protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative data.proto`
 
 ## References
 

@@ -21,11 +21,11 @@ func ClipboardBox(cc *cross_clipboard.CrossClipboard) tview.Primitive {
 			for i, clipboard := range clipboards {
 				row := i + 1
 				if clipboard.Size > 50 {
-					table.SetCell(row, 0, tview.NewTableCell(string(clipboard.Text[:50])))
+					table.SetCell(row, 0, tview.NewTableCell(string(clipboard.Data[:50])))
 				} else {
-					table.SetCell(row, 0, tview.NewTableCell(string(clipboard.Text)))
+					table.SetCell(row, 0, tview.NewTableCell(string(clipboard.Data)))
 				}
-				table.SetCell(row, 1, tview.NewTableCell(strconv.Itoa(clipboard.Size)))
+				table.SetCell(row, 1, tview.NewTableCell(strconv.FormatUint(uint64(clipboard.Size), 10)))
 				table.SetCell(row, 2, tview.NewTableCell(clipboard.Time.Format("15:04:05")))
 			}
 		}

@@ -8,6 +8,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/p2p"
+	"google.golang.org/protobuf/proto"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const EOF byte = 0x00
@@ -54,15 +56,25 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 			s.ErrorChan <- fmt.Errorf("error reading from buffer: %w", err)
 			break
 		}
-		// remove last bytes
+
 		length := len(bytes) - 1
 		if length > 0 {
+			// remove EOF bytes
 			bytes = bytes[:length]
+
+			clipbaodData := &ClipboardData{}
+			err = proto.Unmarshal(bytes, clipbaodData)
+			if err != nil {
+				s.ErrorChan <- fmt.Errorf("error unmarshaling data: %w", err)
+				continue
+			}
+
 			s.LogChan <- fmt.Sprintf("received data from peer: %s size: %d data: %s", name, length, string(bytes))
 			s.ClipboardManager.WriteClipboard(clipboard.Clipboard{
-				Text: bytes,
-				Size: length,
-				Time: time.Now(),
+				IsImage: clipbaodData.IsImage,
+				Data:    clipbaodData.Data,
+				Size:    clipbaodData.DataSize,
+				Time:    clipbaodData.Time.AsTime(),
 			})
 		}
 	}
@@ -74,19 +86,33 @@ func (s *StreamHandler) CreateWriteData() {
 	for clipboardBytes := range s.ClipboardManager.ReadChannel {
 		length := len(clipboardBytes)
 		if length > 0 {
+			now := time.Now()
+
 			// set current clipbaord to avoid recursive
 			s.ClipboardManager.AddClipboard(clipboard.Clipboard{
-				Text: clipboardBytes,
-				Size: length,
-				Time: time.Now(),
+				Data: clipboardBytes,
+				Size: uint32(length),
+				Time: now,
 			})
 
-			// append EOF
-			clipboardBytes = append(clipboardBytes, EOF)
+			// create proto clipboard data
+			clipboardDataBytes, err := proto.Marshal(&ClipboardData{
+				IsImage:  false,
+				Data:     clipboardBytes,
+				DataSize: uint32(length),
+				Time:     timestamppb.New(now),
+			})
+			if err != nil {
+				s.ErrorChan <- fmt.Errorf("ending write stream %w", err)
+				continue
+			}
+
+			// append EOF byte
+			clipboardDataBytes = append(clipboardDataBytes, EOF)
 
 			for name, p := range s.Peers {
 				s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
-				err := s.WriteData(p.Writer, clipboardBytes)
+				err := s.WriteData(p.Writer, clipboardDataBytes)
 				if err != nil {
 					s.LogChan <- fmt.Sprintf("ending write stream %s", name)
 					delete(s.Peers, name)
@@ -95,7 +121,7 @@ func (s *StreamHandler) CreateWriteData() {
 
 			if s.HostWriter != nil {
 				s.LogChan <- fmt.Sprintf("sending data to host size: %d data: %s", length, string(clipboardBytes))
-				s.WriteData(s.HostWriter, clipboardBytes)
+				s.WriteData(s.HostWriter, clipboardDataBytes)
 			}
 		}
 	}

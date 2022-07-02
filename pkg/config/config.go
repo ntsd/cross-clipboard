@@ -7,6 +7,7 @@ type Config struct {
 	ListenHost string
 	ListenPort int
 
-	MaxHistory      int  // max number of history clipboard
-	HiddenClipboard bool // hidden clipboard text
+	MaxSize         uint32 // max size to send clipboard
+	MaxHistory      int    // max number of history clipboard
+	HiddenClipboard bool   // hidden clipboard text
 }
