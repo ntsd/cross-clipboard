@@ -4,14 +4,14 @@ import (
 	"log"
 
 	"github.com/ntsd/cross-clipboard/pkg/config"
-	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
 	"github.com/ntsd/cross-clipboard/ui"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 
-	crossClipboard, err := cross_clipboard.NewCrossClipboard(cfg)
+	crossClipboard, err := crossclipboard.NewCrossClipboard(cfg)
 	if err != nil {
 		panic(err)
 	}

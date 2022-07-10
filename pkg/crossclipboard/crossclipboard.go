@@ -1,17 +1,16 @@
-package cross_clipboard
+package crossclipboard
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/config"
+	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/discovery"
 	"github.com/ntsd/cross-clipboard/pkg/p2p"
 	"github.com/ntsd/cross-clipboard/pkg/stream"
@@ -48,7 +47,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		ctx := context.Background()
 
 		// Creates a new ECDSA key pair
-		prvKey, _, err := crypto.GenerateKeyPairWithReader(crypto.ECDSA, 2048, rand.Reader)
+		prvKey, err := crypto.UnmarshalPrivateKey([]byte(cfg.ID))
 		if err != nil {
 			cc.ErrChan <- xerror.NewFatalError(err)
 		}

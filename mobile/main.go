@@ -30,7 +30,7 @@ package mobile
 
 import (
 	"github.com/ntsd/cross-clipboard/pkg/config"
-	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
 )
 
 type CrossClipbardMobile struct {
@@ -43,7 +43,7 @@ func (c *CrossClipbardMobile) Start() {
 		ListenHost: "0.0.0.0",
 		ListenPort: 4001,
 	}
-	cross_clipboard.NewCrossClipboard(cfg)
+	crossclipboard.NewCrossClipboard(cfg)
 }
 
 func NewCrossClipbardMobile() *CrossClipbardMobile {

@@ -6,12 +6,12 @@ import (
 	"unicode"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
 	"github.com/rivo/tview"
 )
 
 type View struct {
-	CrossClipboard *cross_clipboard.CrossClipboard
+	CrossClipboard *crossclipboard.CrossClipboard
 	app            *tview.Application
 	layout         *tview.Flex
 
@@ -20,7 +20,7 @@ type View struct {
 	pages     []*Page
 }
 
-func NewView(cc *cross_clipboard.CrossClipboard) *View {
+func NewView(cc *crossclipboard.CrossClipboard) *View {
 	v := &View{
 		CrossClipboard: cc,
 		layout:         tview.NewFlex(),

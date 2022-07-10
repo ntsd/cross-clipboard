@@ -4,11 +4,11 @@ import (
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/ntsd/cross-clipboard/pkg/cross_clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
 	"github.com/rivo/tview"
 )
 
-func ClipboardBox(cc *cross_clipboard.CrossClipboard) tview.Primitive {
+func ClipboardBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 	table := tview.NewTable().
 		SetFixed(1, 1)
 

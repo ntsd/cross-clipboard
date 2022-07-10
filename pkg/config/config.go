@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 
+	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/spf13/viper"
 )
 
@@ -19,7 +20,8 @@ type Config struct {
 	TerminalMode bool `mapstructure:"terminal_mode"` // is terminal mode or ui mode
 	HiddenText   bool `mapstructure:"hidden_text"`   // hidden clipboard text in UI
 
-	PrivateKey string `mapstructure:"private_key"` // private key for libp2p and p2p encryption
+	ID            string `mapstructure:"id"`          // id of this client
+	GPGPrivateKey string `mapstructure:"private_key"` // private key for libp2p and p2p encryption
 }
 
 func LoadConfig() Config {
@@ -38,22 +40,34 @@ func LoadConfig() Config {
 	viper.SetDefault("terminal_mode", false)
 	viper.SetDefault("hidden_text", false)
 
-	viper.SetDefault("private_key", "")
+	prvKey, _, err := crypto.NewKeyPair()
+	if err != nil {
+		log.Fatal(err)
+	}
+	prvKeyBytes, err := crypto.MarshalPrivateKey(prvKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	viper.SetDefault("id", string(prvKeyBytes))
 
+	viper.SetDefault("private_key", "")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			viper.SafeWriteConfig()
 		} else {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
 	var cfg Config
-	err := viper.Unmarshal(&cfg)
+	err = viper.Unmarshal(&cfg)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	log.Println("loaded config:", cfg)
+
+	// save config after load default
+	viper.WriteConfig()
 
 	return cfg
 }
