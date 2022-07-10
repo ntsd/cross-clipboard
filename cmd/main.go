@@ -9,16 +9,6 @@ import (
 )
 
 func main() {
-	// help := flag.Bool("help", false, "Display Help")
-	// if *help {
-	// 	fmt.Printf("Simple example for peer discovery using mDNS. mDNS is great when you have multiple peers in local LAN.")
-	// 	fmt.Printf("Usage: \n   Run './chat-with-mdns'\nor Run './chat-with-mdns -host [host] -port [port] -rendezvous [string] -pid [proto ID]'\n")
-
-	// 	os.Exit(0)
-	// }
-
-	// cfg := utils.ParseFlags()
-
 	cfg := config.LoadConfig()
 
 	crossClipboard, err := cross_clipboard.NewCrossClipboard(cfg)
