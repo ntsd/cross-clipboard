@@ -1,4 +1,4 @@
-package p2p
+package device
 
 import (
 	"bufio"
@@ -7,8 +7,8 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 )
 
-// Peer struct for peer
-type Peer struct {
+// Device struct for peer
+type Device struct {
 	AddressInfo peer.AddrInfo
 	OS          string
 
@@ -23,12 +23,12 @@ type Peer struct {
 	ErrChan chan error
 }
 
-// NewPeer initial new peer
-func NewPeer(
+// NewDevice initial new peer
+func NewDevice(
 	addrInfo peer.AddrInfo,
 	stream network.Stream,
-) *Peer {
-	return &Peer{
+) *Device {
+	return &Device{
 		AddressInfo: addrInfo,
 		Stream:      stream,
 		Reader:      bufio.NewReader(stream),

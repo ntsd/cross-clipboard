@@ -11,8 +11,9 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
+	"github.com/ntsd/cross-clipboard/pkg/device"
+	"github.com/ntsd/cross-clipboard/pkg/devicemanager"
 	"github.com/ntsd/cross-clipboard/pkg/discovery"
-	"github.com/ntsd/cross-clipboard/pkg/p2p"
 	"github.com/ntsd/cross-clipboard/pkg/stream"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
 )
@@ -23,8 +24,7 @@ type CrossClipboard struct {
 	Config config.Config
 
 	ClipboardManager *clipboard.ClipboardManager
-	Peers            map[string]*p2p.Peer
-	PeersChannel     chan map[string]*p2p.Peer
+	DeviceManager    *devicemanager.DeviceManager
 
 	LogChan chan string
 	ErrChan chan error
@@ -33,15 +33,14 @@ type CrossClipboard struct {
 // NewCrossClipboard initial cross clipbaord
 func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 	cc := &CrossClipboard{
-		Config:       cfg,
-		Peers:        make(map[string]*p2p.Peer),
-		LogChan:      make(chan string),
-		ErrChan:      make(chan error),
-		PeersChannel: make(chan map[string]*p2p.Peer),
+		Config:  cfg,
+		LogChan: make(chan string),
+		ErrChan: make(chan error),
 	}
 
-	cb := clipboard.NewClipboardManager(cc.Config)
-	cc.ClipboardManager = cb
+	cc.ClipboardManager = clipboard.NewClipboardManager(cc.Config)
+
+	cc.DeviceManager = devicemanager.NewDeviceManager()
 
 	go func() {
 		ctx := context.Background()
@@ -66,7 +65,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		}
 		cc.Host = host
 
-		streamHandler := stream.NewStreamHandler(cc.ClipboardManager, cc.LogChan, cc.ErrChan, cc.Peers)
+		streamHandler := stream.NewStreamHandler(cc.ClipboardManager, cc.LogChan, cc.ErrChan, cc.DeviceManager.Devices)
 
 		// Set a function as stream handler.
 		// This function is called when a peer initiates a connection and starts a stream with this peer.
@@ -93,9 +92,9 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 				continue
 			}
 
-			p := p2p.NewPeer(peerInfo, stream)
-			cc.Peers[peerInfo.ID.Pretty()] = p
-			go streamHandler.CreateReadData(p.Reader, p.AddressInfo.ID.Pretty())
+			dv := device.NewDevice(peerInfo, stream)
+			cc.DeviceManager.AddDevice(dv)
+			go streamHandler.CreateReadData(dv.Reader, dv.AddressInfo.ID.Pretty())
 
 			cc.LogChan <- fmt.Sprintf("connect success to: %s", peerInfo)
 		}

@@ -3,7 +3,7 @@ package stream;
 
 option go_package = "github.com/ntsd/cross-clipboard/pkg/stream";
 
-message PeerData {
+message DeviceData {
   enum OS {
     LINUX = 0;
     DARWIN = 1;
@@ -14,7 +14,8 @@ message PeerData {
   }
   
   OS os = 1;
-  bytes public_key = 2;
+  string name = 2;
+  bytes public_key = 3;
 }
 
 message ClipboardData {
