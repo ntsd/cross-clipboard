@@ -20,6 +20,6 @@ message PeerData {
 message ClipboardData {
   bool is_image = 1;
   fixed32 data_size = 2;
-  int64 time = 3;
+  sfixed64 time = 3;
   bytes data = 4;
 }
