@@ -73,7 +73,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 				IsImage: clipbaodData.IsImage,
 				Data:    clipbaodData.Data,
 				Size:    clipbaodData.DataSize,
-				Time:    time.Unix(clipbaodData.Time, 0),
+				Time:    time.UnixMicro(clipbaodData.Time),
 			})
 		}
 	}
