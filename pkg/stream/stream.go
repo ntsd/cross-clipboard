@@ -9,7 +9,6 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/p2p"
 	"google.golang.org/protobuf/proto"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const EOF byte = 0x00
@@ -74,7 +73,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 				IsImage: clipbaodData.IsImage,
 				Data:    clipbaodData.Data,
 				Size:    clipbaodData.DataSize,
-				Time:    clipbaodData.Time.AsTime(),
+				Time:    time.Unix(clipbaodData.Time, 0),
 			})
 		}
 	}
@@ -100,7 +99,7 @@ func (s *StreamHandler) CreateWriteData() {
 				IsImage:  false,
 				Data:     clipboardBytes,
 				DataSize: uint32(length),
-				Time:     timestamppb.New(now),
+				Time:     now.Unix(),
 			})
 			if err != nil {
 				s.ErrorChan <- fmt.Errorf("ending write stream %w", err)

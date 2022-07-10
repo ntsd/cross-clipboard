@@ -1,8 +1,6 @@
 syntax = "proto3";
 package stream;
 
-import "google/protobuf/timestamp.proto";
-
 option go_package = "github.com/ntsd/cross-clipboard/pkg/stream";
 
 message PeerData {
@@ -23,5 +21,5 @@ message ClipboardData {
   bool is_image = 1;
   fixed32 data_size = 2;
   bytes data = 3;
-  google.protobuf.Timestamp time = 4;
+  int64 time = 4;
 }
