@@ -56,7 +56,9 @@ func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 
 // AddClipboard add clipbaord to clipbaord history
 func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
-	c.CurrentClipboard = newClipboard.Data
-	c.Clipboards = limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
-	c.ClipboardsChannel <- c.Clipboards
+	if bytes.Compare(c.CurrentClipboard, newClipboard.Data) != 0 {
+		c.CurrentClipboard = newClipboard.Data
+		c.Clipboards = limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
+		c.ClipboardsChannel <- c.Clipboards
+	}
 }

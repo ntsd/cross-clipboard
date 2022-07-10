@@ -40,17 +40,9 @@ func LoadConfig() Config {
 	viper.SetDefault("terminal_mode", false)
 	viper.SetDefault("hidden_text", false)
 
-	prvKey, _, err := crypto.NewKeyPair()
-	if err != nil {
-		log.Fatal(err)
-	}
-	prvKeyBytes, err := crypto.MarshalPrivateKey(prvKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-	viper.SetDefault("id", string(prvKeyBytes))
-
+	viper.SetDefault("id", getDefaultID())
 	viper.SetDefault("private_key", "")
+
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			viper.SafeWriteConfig()
@@ -60,7 +52,7 @@ func LoadConfig() Config {
 	}
 
 	var cfg Config
-	err = viper.Unmarshal(&cfg)
+	err := viper.Unmarshal(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,4 +62,16 @@ func LoadConfig() Config {
 	viper.WriteConfig()
 
 	return cfg
+}
+
+func getDefaultID() string {
+	prvKey, _, err := crypto.NewKeyPair()
+	if err != nil {
+		log.Fatal(err)
+	}
+	prvKeyBytes, err := crypto.MarshalPrivateKey(prvKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(prvKeyBytes)
 }
