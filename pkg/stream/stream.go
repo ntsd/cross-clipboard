@@ -11,7 +11,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const EOF byte = 0x00
+const (
+	// EOF is the end of message byte use to delim the message
+	EOF byte = 0x00
+	// DATA TYPE is the last byte befor EOF use to determine the message type
+	DATA_TYPE_DEVICE    byte = 0xFF
+	DATA_TYPE_CLIPBOARD byte = 0xFE
+)
 
 // StreamHandler struct for stream handler
 type StreamHandler struct {
@@ -56,25 +62,24 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 			break
 		}
 
-		length := len(bytes) - 1
-		if length > 0 {
-			// remove EOF bytes
-			bytes = bytes[:length]
+		clipboardData, deviceData, err := s.DecodeData(bytes)
+		if err != nil {
+			s.ErrorChan <- fmt.Errorf("error decoding data: %w", err)
+			continue
+		}
 
-			clipbaodData := &ClipboardData{}
-			err = proto.Unmarshal(bytes, clipbaodData)
-			if err != nil {
-				s.ErrorChan <- fmt.Errorf("error unmarshaling data: %w", err)
-				continue
-			}
-
-			s.LogChan <- fmt.Sprintf("received data from peer: %s size: %d data: %s", name, length, string(bytes))
+		if clipboardData != nil {
+			s.LogChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", name, clipboardData.DataSize)
 			s.ClipboardManager.WriteClipboard(clipboard.Clipboard{
-				IsImage: clipbaodData.IsImage,
-				Data:    clipbaodData.Data,
-				Size:    clipbaodData.DataSize,
-				Time:    time.UnixMicro(clipbaodData.Time),
+				IsImage: clipboardData.IsImage,
+				Data:    clipboardData.Data,
+				Size:    clipboardData.DataSize,
+				Time:    time.UnixMicro(clipboardData.Time),
 			})
+		}
+
+		if deviceData != nil {
+			s.LogChan <- fmt.Sprintf("received device data, peer: %s", name)
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", name)
@@ -82,46 +87,48 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 
 // CreateWriteData handle clipboad channel and write to all peers and host
 func (s *StreamHandler) CreateWriteData() {
+	// waiting for clipboard data
 	for clipboardBytes := range s.ClipboardManager.ReadChannel {
 		length := len(clipboardBytes)
-		if length > 0 {
-			now := time.Now()
+		if length == 0 {
+			// ignore empty clipboard
+			continue
+		}
 
-			// set current clipbaord to avoid recursive
-			s.ClipboardManager.AddClipboard(clipboard.Clipboard{
-				Data: clipboardBytes,
-				Size: uint32(length),
-				Time: now,
-			})
+		now := time.Now()
 
-			// create proto clipboard data
-			clipboardDataBytes, err := proto.Marshal(&ClipboardData{
-				IsImage:  false,
-				Data:     clipboardBytes,
-				DataSize: uint32(length),
-				Time:     now.Unix(),
-			})
+		// set current clipbaord to avoid recursive
+		s.ClipboardManager.AddClipboard(clipboard.Clipboard{
+			Data: clipboardBytes,
+			Size: uint32(length),
+			Time: now,
+		})
+
+		clipboardDataBytes, err := s.EncodeClipboardData(&ClipboardData{
+			IsImage:  false,
+			Data:     clipboardBytes,
+			DataSize: uint32(length),
+			Time:     now.Unix(),
+		})
+		if err != nil {
+			s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
+			continue
+		}
+
+		// send data to each devices
+		for name, d := range s.Devices {
+			s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
+			err := s.WriteData(d.Writer, clipboardDataBytes)
 			if err != nil {
-				s.ErrorChan <- fmt.Errorf("ending write stream %w", err)
-				continue
+				s.LogChan <- fmt.Sprintf("ending write stream %s", name)
+				delete(s.Devices, name)
 			}
+		}
 
-			// append EOF byte
-			clipboardDataBytes = append(clipboardDataBytes, EOF)
-
-			for name, p := range s.Devices {
-				s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
-				err := s.WriteData(p.Writer, clipboardDataBytes)
-				if err != nil {
-					s.LogChan <- fmt.Sprintf("ending write stream %s", name)
-					delete(s.Devices, name)
-				}
-			}
-
-			if s.HostWriter != nil {
-				s.LogChan <- fmt.Sprintf("sending data to host size: %d data: %s", length, string(clipboardBytes))
-				s.WriteData(s.HostWriter, clipboardDataBytes)
-			}
+		// send data to host
+		if s.HostWriter != nil {
+			s.LogChan <- fmt.Sprintf("sending data to host size: %d data: %s", length, string(clipboardBytes))
+			s.WriteData(s.HostWriter, clipboardDataBytes)
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending write streams")
@@ -141,4 +148,68 @@ func (s *StreamHandler) WriteData(w *bufio.Writer, data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (s *StreamHandler) EncodeClipboardData(data *ClipboardData) ([]byte, error) {
+	// create proto clipboard data
+	clipboardDataBytes, err := proto.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling clipboard data: %w", err)
+	}
+
+	// append DATA TYPE
+	clipboardDataBytes = append(clipboardDataBytes, DATA_TYPE_CLIPBOARD)
+
+	// append EOF byte
+	clipboardDataBytes = append(clipboardDataBytes, EOF)
+
+	return clipboardDataBytes, nil
+}
+
+func (s *StreamHandler) EncodeDeviceData(data *DeviceData) ([]byte, error) {
+	// create proto clipboard data
+	clipboardDataBytes, err := proto.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling device data: %w", err)
+	}
+
+	// append DATA TYPE
+	clipboardDataBytes = append(clipboardDataBytes, DATA_TYPE_DEVICE)
+
+	// append EOF byte
+	clipboardDataBytes = append(clipboardDataBytes, EOF)
+
+	return clipboardDataBytes, nil
+}
+
+func (s *StreamHandler) DecodeData(bytes []byte) (*ClipboardData, *DeviceData, error) {
+	length := len(bytes) - 2
+	if length <= 0 {
+		return nil, nil, fmt.Errorf("error decoding data: data length is 0")
+	}
+
+	// get data type from the last byte before EOF
+	dataType := bytes[length-1]
+
+	// remove EOF and data type bytes
+	bytes = bytes[:length-1]
+
+	switch dataType {
+	case DATA_TYPE_CLIPBOARD:
+		clipboardData := &ClipboardData{}
+		err := proto.Unmarshal(bytes, clipboardData)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error unmarshaling clipboard data: %w", err)
+		}
+		return clipboardData, nil, nil
+	case DATA_TYPE_DEVICE:
+		deviceData := &DeviceData{}
+		err := proto.Unmarshal(bytes, deviceData)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error unmarshaling device data: %w", err)
+		}
+		return nil, deviceData, nil
+	default:
+		return nil, nil, fmt.Errorf("error decoding data: unknown data type")
+	}
 }

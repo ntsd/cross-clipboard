@@ -16,7 +16,7 @@ func ClipboardBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 		for clipboards := range cc.ClipboardManager.ClipboardsChannel {
 			table.Clear()
 			table.SetCell(0, 0, tview.NewTableCell("time").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
-			table.SetCell(0, 1, tview.NewTableCell("size (bytes)").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+			table.SetCell(0, 1, tview.NewTableCell("bytes").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			table.SetCell(0, 2, tview.NewTableCell("data").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 
 			for i, clipboard := range clipboards {
