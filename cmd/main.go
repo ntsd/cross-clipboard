@@ -23,6 +23,10 @@ func main() {
 				log.Println("log: ", l)
 			case err := <-crossClipboard.ErrChan:
 				log.Panicln("err: ", err)
+			case cb := <-crossClipboard.ClipboardManager.ClipboardsChannel:
+				log.Panicln("clipboards: ", cb)
+			case dv := <-crossClipboard.DeviceManager.DevicesChannel:
+				log.Panicln("devices: ", dv)
 			}
 		}
 	} else {
