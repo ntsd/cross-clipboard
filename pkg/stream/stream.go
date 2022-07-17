@@ -190,14 +190,14 @@ func (s *StreamHandler) EncodeDeviceData(data *DeviceData) ([]byte, error) {
 func (s *StreamHandler) DecodeData(bytes []byte) (*ClipboardData, *DeviceData, error) {
 	length := len(bytes) - 2
 	if length <= 0 {
-		return nil, nil, fmt.Errorf("error decoding data: data length is 0")
+		return nil, nil, fmt.Errorf("error decoding data: data length <= 0")
 	}
 
 	// get data type from the last byte before EOF
-	dataType := bytes[length-1]
+	dataType := bytes[length]
 
 	// remove EOF and data type bytes
-	bytes = bytes[:length-1]
+	bytes = bytes[:length]
 
 	switch dataType {
 	case DATA_TYPE_CLIPBOARD:
