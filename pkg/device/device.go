@@ -15,7 +15,7 @@ const (
 	StatusPending DeviceStatus = iota
 	// StatusConnecting the device is trusted and connecting
 	StatusConnecting
-	// StatusConnecting the device is trusted and disconnecting
+	// StatusConnecting the device is trusted but disconnecting or offline
 	StatusDisconnecting
 	// StatusError found a error in the device should disconnect and reconnect
 	StatusError
@@ -26,14 +26,15 @@ const (
 // Device struct for peer
 type Device struct {
 	AddressInfo peer.AddrInfo
-	OS          string
+
+	OS        string
+	Name      string
+	PublicKey *[]byte
+	Status    DeviceStatus
 
 	Stream network.Stream
 	Writer *bufio.Writer
 	Reader *bufio.Reader
-
-	Status    DeviceStatus
-	PublicKey *[]byte
 
 	LogChan chan string
 	ErrChan chan error

@@ -65,7 +65,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		}
 		cc.Host = host
 
-		streamHandler := stream.NewStreamHandler(cc.ClipboardManager, cc.LogChan, cc.ErrChan, cc.DeviceManager.Devices)
+		streamHandler := stream.NewStreamHandler(cc.ClipboardManager, cc.DeviceManager, cc.LogChan, cc.ErrChan)
 
 		// Set a function as stream handler.
 		// This function is called when a peer initiates a connection and starts a stream with this peer.

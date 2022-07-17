@@ -7,7 +7,7 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
-	"github.com/ntsd/cross-clipboard/pkg/device"
+	"github.com/ntsd/cross-clipboard/pkg/devicemanager"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -22,18 +22,23 @@ const (
 // StreamHandler struct for stream handler
 type StreamHandler struct {
 	ClipboardManager *clipboard.ClipboardManager
+	DeviceManager    *devicemanager.DeviceManager
 	HostReader       *bufio.Reader
 	HostWriter       *bufio.Writer
-	Devices          map[string]*device.Device
 	LogChan          chan string
 	ErrorChan        chan error
 }
 
 // NewStreamHandler initial new stream handler
-func NewStreamHandler(cp *clipboard.ClipboardManager, logChan chan string, errorChan chan error, devices map[string]*device.Device) *StreamHandler {
+func NewStreamHandler(
+	cp *clipboard.ClipboardManager,
+	deviceManager *devicemanager.DeviceManager,
+	logChan chan string,
+	errorChan chan error,
+) *StreamHandler {
 	s := &StreamHandler{
 		ClipboardManager: cp,
-		Devices:          devices,
+		DeviceManager:    deviceManager,
 		LogChan:          logChan,
 		ErrorChan:        errorChan,
 	}
@@ -116,12 +121,12 @@ func (s *StreamHandler) CreateWriteData() {
 		}
 
 		// send data to each devices
-		for name, d := range s.Devices {
+		for name, d := range s.DeviceManager.Devices {
 			s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
 			err := s.WriteData(d.Writer, clipboardDataBytes)
 			if err != nil {
 				s.LogChan <- fmt.Sprintf("ending write stream %s", name)
-				delete(s.Devices, name)
+				s.DeviceManager.RemoveDevice(d)
 			}
 		}
 

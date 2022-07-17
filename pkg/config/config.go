@@ -9,19 +9,24 @@ import (
 
 // Config config struct for cross clipbaord
 type Config struct {
+	// Network Config
 	GroupName  string `mapstructure:"group_name"`
 	ProtocolID string `mapstructure:"protocal_id"`
 	ListenHost string `mapstructure:"listen_host"`
 	ListenPort int    `mapstructure:"listen_port"`
 
+	// Clipbaord Config
 	MaxSize    uint32 `mapstructure:"max_size"`    // max size to send clipboard
 	MaxHistory int    `mapstructure:"max_history"` // max number of history clipboard
 
+	// UI Config
 	TerminalMode bool `mapstructure:"terminal_mode"` // is terminal mode or ui mode
 	HiddenText   bool `mapstructure:"hidden_text"`   // hidden clipboard text in UI
 
+	// Device Config
 	ID            string `mapstructure:"id"`          // id of this client
 	GPGPrivateKey string `mapstructure:"private_key"` // private key for libp2p and p2p encryption
+	AutoTrust     bool   `mapstructure:"auto_trust"`  // auto trust device
 }
 
 func LoadConfig() Config {
@@ -74,4 +79,8 @@ func getDefaultID() string {
 		log.Fatal(err)
 	}
 	return string(prvKeyBytes)
+}
+
+func getDefaultPrivateKey() string {
+	return ""
 }
