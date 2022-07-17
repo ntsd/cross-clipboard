@@ -55,6 +55,7 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	s.HostWriter = bufio.NewWriter(stream)
 	go s.CreateReadData(s.HostReader, "host")
 
+	s.LogChan <- fmt.Sprintf("%s connected to this host", stream.Conn().RemotePeer())
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
 

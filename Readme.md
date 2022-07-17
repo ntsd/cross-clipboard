@@ -19,6 +19,22 @@ A multi device clipboard sharing over p2p in lan network.
 
 ## Installation
 
+### Linux
+
+```shell
+# install libx11-dev
+sudo apt install libx11-dev
+
+# install Xvfb
+sudo apt install -y xvfb
+
+# initialize a virtual frame buffer (can put in .profile)
+Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+export DISPLAY=:99.0
+```
+
+### Mobile Build
+
 - Install NDK >=21.3.6528147
 
 - Install Go mobile
