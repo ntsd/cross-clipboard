@@ -24,9 +24,9 @@ func main() {
 			case err := <-crossClipboard.ErrChan:
 				log.Panicln("err: ", err)
 			case cb := <-crossClipboard.ClipboardManager.ClipboardsChannel:
-				log.Panicln("clipboards: ", cb)
+				_ = cb
 			case dv := <-crossClipboard.DeviceManager.DevicesChannel:
-				log.Panicln("devices: ", dv)
+				_ = dv
 			}
 		}
 	} else {
