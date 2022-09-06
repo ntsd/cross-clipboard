@@ -64,3 +64,7 @@ go install golang.org/x/mobile/cmd/gomobile@latest
 <https://www.sajalkayan.com/post/android-apps-golang.html>
 
 <https://sites.google.com/a/athaydes.com/renato-athaydes/posts/buildingamobilefrontendforagoapplicationusingflutter>
+
+<https://en.wikipedia.org/wiki/Secure_multi-party_computation>
+
+<https://github.com/tuneinsight/lattigo>

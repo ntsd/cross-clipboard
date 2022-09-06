@@ -8,7 +8,7 @@ import (
 
 func (v *View) NewConfigPage() *Page {
 	textView := tview.NewTextView()
-	fmt.Fprint(textView, "Config Page")
+	fmt.Fprint(textView, "ID: "+v.CrossClipboard.Host.ID().Pretty())
 	return &Page{
 		Title:   "Config",
 		Content: textView,
