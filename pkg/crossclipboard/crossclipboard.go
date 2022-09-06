@@ -42,29 +42,31 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 
 	cc.DeviceManager = devicemanager.NewDeviceManager()
 
+	ctx := context.Background()
+
+	// Creates a new ECDSA key pair
+	prvKey, err := crypto.UnmarshalPrivateKey([]byte(cfg.ID))
+	if err != nil {
+		return nil, xerror.NewFatalError(err)
+	}
+
+	// 0.0.0.0 will listen on any interface device.
+	sourceMultiAddr, err := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/%s/tcp/%d", cc.Config.ListenHost, cc.Config.ListenPort))
+	if err != nil {
+		return nil, xerror.NewFatalError(err)
+	}
+
+	// libp2p.New constructs a new libp2p Host.
+	host, err := libp2p.New(
+		libp2p.ListenAddrs(sourceMultiAddr),
+		libp2p.Identity(prvKey),
+	)
+	if err != nil {
+		return nil, xerror.NewFatalError(err)
+	}
+	cc.Host = host
+
 	go func() {
-		ctx := context.Background()
-
-		// Creates a new ECDSA key pair
-		prvKey, err := crypto.UnmarshalPrivateKey([]byte(cfg.ID))
-		if err != nil {
-			cc.ErrChan <- xerror.NewFatalError(err)
-		}
-
-		// 0.0.0.0 will listen on any interface device.
-		sourceMultiAddr, _ := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/%s/tcp/%d", cc.Config.ListenHost, cc.Config.ListenPort))
-		cc.LogChan <- fmt.Sprintf("[*] listening on: %s with port %d", cc.Config.ListenHost, cc.Config.ListenPort)
-
-		// libp2p.New constructs a new libp2p Host.
-		host, err := libp2p.New(
-			libp2p.ListenAddrs(sourceMultiAddr),
-			libp2p.Identity(prvKey),
-		)
-		if err != nil {
-			cc.ErrChan <- xerror.NewFatalError(err)
-		}
-		cc.Host = host
-
 		streamHandler := stream.NewStreamHandler(cc.ClipboardManager, cc.DeviceManager, cc.LogChan, cc.ErrChan)
 
 		// Set a function as stream handler.
