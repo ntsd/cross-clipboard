@@ -22,7 +22,7 @@ func main() {
 			case l := <-crossClipboard.LogChan:
 				log.Println("log: ", l)
 			case err := <-crossClipboard.ErrChan:
-				log.Panicln("err: ", err)
+				log.Println("err: ", err)
 			case cb := <-crossClipboard.ClipboardManager.ClipboardsChannel:
 				_ = cb
 			case dv := <-crossClipboard.DeviceManager.DevicesChannel:
