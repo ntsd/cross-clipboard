@@ -80,7 +80,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 		}
 
 		for peerInfo := range peerInfoChan { // when discover a peer
-			cc.LogChan <- fmt.Sprintf("connecting to peer: %s", peerInfo)
+			cc.LogChan <- fmt.Sprintf("connecting to peer host: %s", peerInfo)
 
 			if err := cc.Host.Connect(ctx, peerInfo); err != nil {
 				cc.ErrChan <- fmt.Errorf("connect error: %w", err)
@@ -98,7 +98,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 			cc.DeviceManager.AddDevice(dv)
 			go streamHandler.CreateReadData(dv.Reader, dv.AddressInfo.ID.Pretty())
 
-			cc.LogChan <- fmt.Sprintf("connect success to: %s", peerInfo)
+			cc.LogChan <- fmt.Sprintf("connected to peer host: %s", peerInfo)
 		}
 	}()
 

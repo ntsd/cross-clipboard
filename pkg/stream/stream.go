@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/network"
+	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/multiformats/go-multiaddr"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/devicemanager"
@@ -23,8 +25,6 @@ const (
 type StreamHandler struct {
 	ClipboardManager *clipboard.ClipboardManager
 	DeviceManager    *devicemanager.DeviceManager
-	HostReader       *bufio.Reader
-	HostWriter       *bufio.Writer
 	LogChan          chan string
 	ErrorChan        chan error
 }
@@ -48,14 +48,19 @@ func NewStreamHandler(
 
 // HandleStream handler when a peer connect this host
 func (s *StreamHandler) HandleStream(stream network.Stream) {
-	s.LogChan <- fmt.Sprintf("got a new stream from %s", stream.Conn().RemotePeer())
+	s.LogChan <- fmt.Sprintf("peer %s connecting to this host", stream.Conn().RemotePeer())
 
 	// Create a new peer
-	s.HostReader = bufio.NewReader(stream)
-	s.HostWriter = bufio.NewWriter(stream)
-	go s.CreateReadData(s.HostReader, stream.Conn().RemotePeer().Pretty())
+	dv := device.NewDevice(peer.AddrInfo{
+		ID:    stream.Conn().RemotePeer(),
+		Addrs: []multiaddr.Multiaddr{stream.Conn().RemoteMultiaddr()},
+	}, stream)
+	s.DeviceManager.AddDevice(dv)
+	dv.Reader = bufio.NewReader(stream)
+	dv.Writer = bufio.NewWriter(stream)
+	go s.CreateReadData(dv.Reader, stream.Conn().RemotePeer().Pretty())
 
-	s.LogChan <- fmt.Sprintf("%s connected to this host", stream.Conn().RemotePeer())
+	s.LogChan <- fmt.Sprintf("peer %s connected to this host", stream.Conn().RemotePeer())
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
 
@@ -136,12 +141,6 @@ func (s *StreamHandler) CreateWriteData() {
 				s.LogChan <- fmt.Sprintf("ending write stream %s", name)
 				s.DeviceManager.RemoveDevice(d)
 			}
-		}
-
-		// send data to host
-		if s.HostWriter != nil {
-			s.LogChan <- fmt.Sprintf("sending data to host size: %d data: %s", length, string(clipboardBytes))
-			s.WriteData(s.HostWriter, clipboardDataBytes)
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending write streams")
