@@ -7,8 +7,8 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/devicemanager"
-	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -53,14 +53,14 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	// Create a new peer
 	s.HostReader = bufio.NewReader(stream)
 	s.HostWriter = bufio.NewWriter(stream)
-	go s.CreateReadData(s.HostReader, "host")
+	go s.CreateReadData(s.HostReader, stream.Conn().RemotePeer().Pretty())
 
 	s.LogChan <- fmt.Sprintf("%s connected to this host", stream.Conn().RemotePeer())
 	// 'stream' will stay open until you close it (or the other side closes it).
 }
 
 // CreateReadData craete a new read streaming for host or peer
-func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
+func (s *StreamHandler) CreateReadData(reader *bufio.Reader, id string) {
 	for {
 		bytes, err := reader.ReadBytes(EOF)
 		if err != nil {
@@ -75,7 +75,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 		}
 
 		if clipboardData != nil {
-			s.LogChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", name, clipboardData.DataSize)
+			s.LogChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", id, clipboardData.DataSize)
 			s.ClipboardManager.WriteClipboard(clipboard.Clipboard{
 				IsImage: clipboardData.IsImage,
 				Data:    clipboardData.Data,
@@ -85,10 +85,17 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, name string) {
 		}
 
 		if deviceData != nil {
-			s.LogChan <- fmt.Sprintf("received device data, peer: %s", name)
+			s.LogChan <- fmt.Sprintf("received device data, peer: %s", id)
+			s.LogChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
+			dv := s.DeviceManager.GetDevice(id)
+			dv.Name = deviceData.Name
+			dv.OS = deviceData.Os.String()
+			dv.PublicKey = deviceData.PublicKey
+			dv.Status = device.StatusConnecting
+			s.DeviceManager.UpdateDevice(dv)
 		}
 	}
-	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", name)
+	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", id)
 }
 
 // CreateWriteData handle clipboad channel and write to all peers and host
@@ -154,68 +161,4 @@ func (s *StreamHandler) WriteData(w *bufio.Writer, data []byte) error {
 		return err
 	}
 	return nil
-}
-
-func (s *StreamHandler) EncodeClipboardData(data *ClipboardData) ([]byte, error) {
-	// create proto clipboard data
-	clipboardDataBytes, err := proto.Marshal(data)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling clipboard data: %w", err)
-	}
-
-	// append DATA TYPE
-	clipboardDataBytes = append(clipboardDataBytes, DATA_TYPE_CLIPBOARD)
-
-	// append EOF byte
-	clipboardDataBytes = append(clipboardDataBytes, EOF)
-
-	return clipboardDataBytes, nil
-}
-
-func (s *StreamHandler) EncodeDeviceData(data *DeviceData) ([]byte, error) {
-	// create proto clipboard data
-	clipboardDataBytes, err := proto.Marshal(data)
-	if err != nil {
-		return nil, fmt.Errorf("error marshaling device data: %w", err)
-	}
-
-	// append DATA TYPE
-	clipboardDataBytes = append(clipboardDataBytes, DATA_TYPE_DEVICE)
-
-	// append EOF byte
-	clipboardDataBytes = append(clipboardDataBytes, EOF)
-
-	return clipboardDataBytes, nil
-}
-
-func (s *StreamHandler) DecodeData(bytes []byte) (*ClipboardData, *DeviceData, error) {
-	length := len(bytes) - 2
-	if length <= 0 {
-		return nil, nil, fmt.Errorf("error decoding data: data length <= 0")
-	}
-
-	// get data type from the last byte before EOF
-	dataType := bytes[length]
-
-	// remove EOF and data type bytes
-	bytes = bytes[:length]
-
-	switch dataType {
-	case DATA_TYPE_CLIPBOARD:
-		clipboardData := &ClipboardData{}
-		err := proto.Unmarshal(bytes, clipboardData)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error unmarshaling clipboard data: %w", err)
-		}
-		return clipboardData, nil, nil
-	case DATA_TYPE_DEVICE:
-		deviceData := &DeviceData{}
-		err := proto.Unmarshal(bytes, deviceData)
-		if err != nil {
-			return nil, nil, fmt.Errorf("error unmarshaling device data: %w", err)
-		}
-		return nil, deviceData, nil
-	default:
-		return nil, nil, fmt.Errorf("error decoding data: unknown data type")
-	}
 }

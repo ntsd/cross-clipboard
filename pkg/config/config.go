@@ -1,11 +1,14 @@
 package config
 
 import (
+	"encoding/base64"
 	"log"
 
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/spf13/viper"
 )
+
+const defaultPassphrase = "PleaseChangeThis!@#$"
 
 // Config config struct for cross clipbaord
 type Config struct {
@@ -27,6 +30,7 @@ type Config struct {
 	ID            string `mapstructure:"id"`          // id of this client
 	GPGPrivateKey string `mapstructure:"private_key"` // private key for libp2p and p2p encryption
 	AutoTrust     bool   `mapstructure:"auto_trust"`  // auto trust device
+	Passphrase    string `mapstructure:"passphrase"`  // passphrase in base64 encoded, will use to encrypt public key
 }
 
 func LoadConfig() Config {
@@ -47,6 +51,7 @@ func LoadConfig() Config {
 
 	viper.SetDefault("id", getDefaultID())
 	viper.SetDefault("private_key", "")
+	viper.SetDefault("passphrase", base64.StdEncoding.EncodeToString([]byte(defaultPassphrase)))
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

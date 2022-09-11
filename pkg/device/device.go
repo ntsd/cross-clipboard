@@ -29,7 +29,7 @@ type Device struct {
 
 	OS        string
 	Name      string
-	PublicKey *[]byte
+	PublicKey []byte
 	Status    DeviceStatus
 
 	Stream network.Stream

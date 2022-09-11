@@ -29,6 +29,10 @@ func (dm *DeviceManager) RemoveDevice(device *device.Device) {
 	dm.DevicesChannel <- dm.Devices
 }
 
+func (dm *DeviceManager) GetDevice(id string) *device.Device {
+	return dm.Devices[id]
+}
+
 func (dm *DeviceManager) UpdateDevice(device *device.Device) {
 	dm.Devices[device.AddressInfo.ID.Pretty()] = device
 	dm.DevicesChannel <- dm.Devices
