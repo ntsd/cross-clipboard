@@ -75,7 +75,7 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 }
 
 // CreateReadData craete a new read streaming for host or peer
-func (s *StreamHandler) CreateReadData(reader *bufio.Reader, id string) {
+func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) {
 	// generate public key
 	pub, err := s.Config.PGPPrivateKey.GetPublicKey()
 	if err != nil {
@@ -83,13 +83,17 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, id string) {
 		return
 	}
 
-	// sending device info and public key
-	dv := s.DeviceManager.GetDevice(id)
-	s.EncodeDeviceData(&DeviceData{
+	s.LogChan <- fmt.Sprintf("sending device info and public key to %s", dv.AddressInfo.ID.Pretty())
+	deviceData, err := s.EncodeDeviceData(&DeviceData{
 		Name:      s.Config.Username,
 		Os:        runtime.GOOS,
 		PublicKey: pub,
 	})
+	err = s.WriteData(dv.Writer, deviceData)
+	if err != nil {
+		s.ErrorChan <- fmt.Errorf("cannot send device data to %s: %w", dv.AddressInfo.ID.Pretty(), err)
+		return
+	}
 
 	for {
 		bytes, err := reader.ReadBytes(EOF)
@@ -115,7 +119,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, id string) {
 		}
 
 		if deviceData != nil {
-			s.LogChan <- fmt.Sprintf("received device data, peer: %s", id)
+			s.LogChan <- fmt.Sprintf("received device data, peer: %s", dv.AddressInfo.ID.Pretty())
 			s.LogChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
 
 			dv.Name = deviceData.Name

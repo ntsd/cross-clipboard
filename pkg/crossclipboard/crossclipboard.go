@@ -101,7 +101,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 
 			dv := device.NewDevice(peerInfo, stream)
 			cc.DeviceManager.AddDevice(dv)
-			go streamHandler.CreateReadData(dv.Reader, dv.AddressInfo.ID.Pretty())
+			go streamHandler.CreateReadData(dv.Reader, dv)
 
 			cc.LogChan <- fmt.Sprintf("connected to peer host: %s", peerInfo)
 		}
