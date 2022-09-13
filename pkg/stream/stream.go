@@ -68,7 +68,7 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	s.DeviceManager.AddDevice(dv)
 	dv.Reader = bufio.NewReader(stream)
 	dv.Writer = bufio.NewWriter(stream)
-	go s.CreateReadData(dv.Reader, stream.Conn().RemotePeer().Pretty())
+	go s.CreateReadData(dv.Reader, dv)
 
 	s.LogChan <- fmt.Sprintf("peer %s connected to this host", stream.Conn().RemotePeer())
 	// 'stream' will stay open until you close it (or the other side closes it).
@@ -109,7 +109,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		}
 
 		if clipboardData != nil {
-			s.LogChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", id, clipboardData.DataSize)
+			s.LogChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
 			s.ClipboardManager.WriteClipboard(clipboard.Clipboard{
 				IsImage: clipboardData.IsImage,
 				Data:    clipboardData.Data,
@@ -143,7 +143,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 			s.DeviceManager.UpdateDevice(dv)
 		}
 	}
-	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", id)
+	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", dv.AddressInfo.ID.Pretty())
 }
 
 // CreateWriteData handle clipboad channel and write to all peers and host
