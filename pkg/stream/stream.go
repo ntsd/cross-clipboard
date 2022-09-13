@@ -16,14 +16,6 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/devicemanager"
 )
 
-const (
-	// EOF is the end of message byte use to delim the message
-	EOF byte = 0x00
-	// DATA TYPE is the last byte befor EOF use to determine the message type
-	DATA_TYPE_DEVICE    byte = 0xFF
-	DATA_TYPE_CLIPBOARD byte = 0xFE
-)
-
 // StreamHandler struct for stream handler
 type StreamHandler struct {
 	Config           config.Config
@@ -68,6 +60,7 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 	s.DeviceManager.AddDevice(dv)
 	dv.Reader = bufio.NewReader(stream)
 	dv.Writer = bufio.NewWriter(stream)
+
 	go s.CreateReadData(dv.Reader, dv)
 
 	s.LogChan <- fmt.Sprintf("peer %s connected to this host", stream.Conn().RemotePeer())
@@ -96,13 +89,20 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 	}
 
 	for {
-		bytes, err := reader.ReadBytes(EOF)
+		dataSize, err := readDataSize(reader)
+		if err != nil {
+			s.ErrorChan <- fmt.Errorf("error reading data size: %w", err)
+			break
+		}
+
+		buffer := make([]byte, dataSize)
+		_, err = reader.Read(buffer)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error reading from buffer: %w", err)
 			break
 		}
 
-		clipboardData, deviceData, err := s.DecodeData(bytes)
+		clipboardData, deviceData, err := s.DecodeData(buffer)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error decoding data: %w", err)
 			continue
@@ -173,24 +173,24 @@ func (s *StreamHandler) CreateWriteData() {
 		}
 
 		// send data to each devices
-		for name, d := range s.DeviceManager.Devices {
-			if d.PgpEncrypter == nil {
+		for name, dv := range s.DeviceManager.Devices {
+			if dv.PgpEncrypter == nil {
 				s.ErrorChan <- fmt.Errorf("not found pgp encrypter for device %s", name)
 				continue
 			}
 
 			s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
 
-			clipboardDataBytes, err := s.EncodeClipboardData(name, clipboardData)
+			clipboardDataBytes, err := s.EncodeClipboardData(dv, clipboardData)
 			if err != nil {
 				s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
 				continue
 			}
 
-			err = s.WriteData(d.Writer, clipboardDataBytes)
+			err = s.WriteData(dv.Writer, clipboardDataBytes)
 			if err != nil {
 				s.LogChan <- fmt.Sprintf("ending write stream %s", name)
-				s.DeviceManager.RemoveDevice(d)
+				s.DeviceManager.RemoveDevice(dv)
 			}
 		}
 	}

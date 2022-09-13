@@ -70,3 +70,7 @@ go install golang.org/x/mobile/cmd/gomobile@latest
 <https://github.com/tuneinsight/lattigo>
 
 <https://goteleport.com/blog/comparing-ssh-keys/>
+
+<https://medium.com/learning-the-go-programming-language/streaming-io-in-go-d93507931185>
+
+<https://stackoverflow.com/questions/13660864/reading-specific-number-of-bytes-from-a-buffered-reader-in-golang>

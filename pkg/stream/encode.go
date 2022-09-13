@@ -3,55 +3,79 @@ package stream
 import (
 	"fmt"
 
+	"github.com/ntsd/cross-clipboard/pkg/device"
 	"google.golang.org/protobuf/proto"
 )
 
-func (s *StreamHandler) EncodeClipboardData(deviceId string, data *ClipboardData) ([]byte, error) {
+const (
+	// DATA TYPE is the last byte befor EOF use to determine the message type
+	DATA_TYPE_DEVICE    byte = 0xFF
+	DATA_TYPE_CLIPBOARD byte = 0xFE
+)
+
+// EncodeClipboardData encode data for stream package | size(bytes) int 4 bytes | data type 1 byte | message n bytes |
+func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *ClipboardData) ([]byte, error) {
+	packageData := []byte{}
+
 	// create proto clipboard data
-	clipboardDataBytes, err := proto.Marshal(data)
+	clipboardDataBytes, err := proto.Marshal(clipboardData)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling clipboard data: %w", err)
 	}
 
 	// encrypt clipboard data
-	s.DeviceManager.GetDevice(deviceId)
+	clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
+	if err != nil {
+		return nil, fmt.Errorf("error to encrypt clipboard data: %w", err)
+	}
+	dataSize := len(clipboardDataEncrypted)
+
+	// append data size + 1 bytes for data type
+	packageData = append(packageData, intToBytes(dataSize+1)...)
 
 	// append DATA TYPE
-	clipboardDataBytes = append(clipboardDataBytes, DATA_TYPE_CLIPBOARD)
+	packageData = append(packageData, DATA_TYPE_CLIPBOARD)
 
-	// append EOF byte
-	clipboardDataBytes = append(clipboardDataBytes, EOF)
+	// append message
+	packageData = append(packageData, clipboardDataEncrypted...)
 
-	return clipboardDataBytes, nil
+	return packageData, nil
 }
 
+// EncodeDeviceData encode data for stream package | size(bytes) int 4 bytes | data type 1 byte | message n bytes |
 func (s *StreamHandler) EncodeDeviceData(data *DeviceData) ([]byte, error) {
-	// create proto clipboard data
-	clipboardDataBytes, err := proto.Marshal(data)
+	packageData := []byte{}
+
+	// create proto device data
+	deviceDataBytes, err := proto.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling device data: %w", err)
 	}
+	dataSize := len(deviceDataBytes)
+
+	// append data size + 1 bytes for data type
+	packageData = append(packageData, intToBytes(dataSize+1)...)
 
 	// append DATA TYPE
-	clipboardDataBytes = append(clipboardDataBytes, DATA_TYPE_DEVICE)
+	packageData = append(packageData, DATA_TYPE_DEVICE)
 
-	// append EOF byte
-	clipboardDataBytes = append(clipboardDataBytes, EOF)
+	// append message
+	packageData = append(packageData, deviceDataBytes...)
 
-	return clipboardDataBytes, nil
+	return packageData, nil
 }
 
 func (s *StreamHandler) DecodeData(bytes []byte) (*ClipboardData, *DeviceData, error) {
-	length := len(bytes) - 2
-	if length <= 0 {
+	length := len(bytes)
+	if length <= 1 {
 		return nil, nil, fmt.Errorf("error decoding data: data length <= 0")
 	}
 
 	// get data type from the last byte before EOF
-	dataType := bytes[length]
+	dataType := bytes[0]
 
-	// remove EOF and data type bytes
-	bytes = bytes[:length]
+	// remove data type bytes
+	bytes = bytes[1:]
 
 	switch dataType {
 	case DATA_TYPE_CLIPBOARD:
