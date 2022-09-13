@@ -3,12 +3,15 @@ package stream
 import (
 	"bufio"
 	"fmt"
+	"runtime"
 	"time"
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/config"
+	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/devicemanager"
 )
@@ -23,24 +26,31 @@ const (
 
 // StreamHandler struct for stream handler
 type StreamHandler struct {
+	Config           config.Config
 	ClipboardManager *clipboard.ClipboardManager
 	DeviceManager    *devicemanager.DeviceManager
 	LogChan          chan string
 	ErrorChan        chan error
+
+	pgpDecrypter *crypto.PGPDecrypter
 }
 
 // NewStreamHandler initial new stream handler
 func NewStreamHandler(
+	cfg config.Config,
 	cp *clipboard.ClipboardManager,
 	deviceManager *devicemanager.DeviceManager,
 	logChan chan string,
 	errorChan chan error,
+	pgpDecrypter *crypto.PGPDecrypter,
 ) *StreamHandler {
 	s := &StreamHandler{
+		Config:           cfg,
 		ClipboardManager: cp,
 		DeviceManager:    deviceManager,
 		LogChan:          logChan,
 		ErrorChan:        errorChan,
+		pgpDecrypter:     pgpDecrypter,
 	}
 	go s.CreateWriteData()
 	return s
@@ -66,6 +76,21 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 
 // CreateReadData craete a new read streaming for host or peer
 func (s *StreamHandler) CreateReadData(reader *bufio.Reader, id string) {
+	// generate public key
+	pub, err := s.Config.PGPPrivateKey.GetPublicKey()
+	if err != nil {
+		s.ErrorChan <- fmt.Errorf("error to generate pubic key: %w", err)
+		return
+	}
+
+	// sending device info and public key
+	dv := s.DeviceManager.GetDevice(id)
+	s.EncodeDeviceData(&DeviceData{
+		Name:      s.Config.Username,
+		Os:        runtime.GOOS,
+		PublicKey: pub,
+	})
+
 	for {
 		bytes, err := reader.ReadBytes(EOF)
 		if err != nil {
@@ -92,11 +117,25 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, id string) {
 		if deviceData != nil {
 			s.LogChan <- fmt.Sprintf("received device data, peer: %s", id)
 			s.LogChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
-			dv := s.DeviceManager.GetDevice(id)
+
 			dv.Name = deviceData.Name
-			dv.OS = deviceData.Os.String()
+			dv.OS = deviceData.Os
 			dv.PublicKey = deviceData.PublicKey
+
+			publicKey, err := crypto.ByteToPGPKey(deviceData.PublicKey)
+			if err != nil {
+				s.ErrorChan <- fmt.Errorf("error to create pgp public key: %w", err)
+				break
+			}
+			pgpEncrypter, err := crypto.NewPGPEncrypter(publicKey)
+			if err != nil {
+				s.ErrorChan <- fmt.Errorf("error to create pgp encrypter: %w", err)
+				break
+			}
+			dv.PgpEncrypter = pgpEncrypter
+
 			dv.Status = device.StatusConnecting
+
 			s.DeviceManager.UpdateDevice(dv)
 		}
 	}
@@ -122,21 +161,29 @@ func (s *StreamHandler) CreateWriteData() {
 			Time: now,
 		})
 
-		clipboardDataBytes, err := s.EncodeClipboardData(&ClipboardData{
+		clipboardData := &ClipboardData{
 			IsImage:  false,
 			Data:     clipboardBytes,
 			DataSize: uint32(length),
 			Time:     now.Unix(),
-		})
-		if err != nil {
-			s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
-			continue
 		}
 
 		// send data to each devices
 		for name, d := range s.DeviceManager.Devices {
+			if d.PgpEncrypter == nil {
+				s.ErrorChan <- fmt.Errorf("not found pgp encrypter for device %s", name)
+				continue
+			}
+
 			s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
-			err := s.WriteData(d.Writer, clipboardDataBytes)
+
+			clipboardDataBytes, err := s.EncodeClipboardData(name, clipboardData)
+			if err != nil {
+				s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
+				continue
+			}
+
+			err = s.WriteData(d.Writer, clipboardDataBytes)
 			if err != nil {
 				s.LogChan <- fmt.Sprintf("ending write stream %s", name)
 				s.DeviceManager.RemoveDevice(d)

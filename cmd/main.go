@@ -9,11 +9,14 @@ import (
 )
 
 func main() {
-	cfg := config.LoadConfig()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	crossClipboard, err := crossclipboard.NewCrossClipboard(cfg)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	if cfg.TerminalMode {

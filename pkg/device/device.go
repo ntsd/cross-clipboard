@@ -5,6 +5,7 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
+	"github.com/ntsd/cross-clipboard/pkg/crypto"
 )
 
 // DeviceStatus device status
@@ -38,6 +39,8 @@ type Device struct {
 
 	LogChan chan string
 	ErrChan chan error
+
+	PgpEncrypter *crypto.PGPEncrypter
 }
 
 // NewDevice initial new peer

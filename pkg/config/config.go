@@ -2,8 +2,12 @@ package config
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log"
+	"os/user"
 
+	gopenpgp "github.com/ProtonMail/gopenpgp/v2/crypto"
+	p2pcrypto "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/spf13/viper"
 )
@@ -27,13 +31,21 @@ type Config struct {
 	HiddenText   bool `mapstructure:"hidden_text"`   // hidden clipboard text in UI
 
 	// Device Config
-	ID            string `mapstructure:"id"`          // id of this client
-	GPGPrivateKey string `mapstructure:"private_key"` // private key for libp2p and p2p encryption
-	AutoTrust     bool   `mapstructure:"auto_trust"`  // auto trust device
-	Passphrase    string `mapstructure:"passphrase"`  // passphrase in base64 encoded, will use to encrypt public key
+	Username             string            `mapstructure:"-"`           // username of the device
+	ID                   p2pcrypto.PrivKey `mapstructure:"-"`           // id private key of this device
+	IDPem                string            `mapstructure:"id"`          // id private key pem
+	PGPPrivateKey        *gopenpgp.Key     `mapstructure:"-"`           // pgp private key for e2e encryption
+	PGPPrivateKeyArmored string            `mapstructure:"private_key"` // armor pgp private key
+	AutoTrust            bool              `mapstructure:"auto_trust"`  // auto trust device
+	Passphrase           string            `mapstructure:"passphrase"`  // passphrase in base64 encoded, will use to encrypt public key
 }
 
-func LoadConfig() Config {
+func LoadConfig() (Config, error) {
+	user, err := user.Current()
+	if err != nil {
+		return Config{}, fmt.Errorf("error to get user: %w", err)
+	}
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -49,8 +61,16 @@ func LoadConfig() Config {
 	viper.SetDefault("terminal_mode", false)
 	viper.SetDefault("hidden_text", false)
 
-	viper.SetDefault("id", getDefaultID())
-	viper.SetDefault("private_key", "")
+	idPem, err := crypto.GenerateIDPem()
+	if err != nil {
+		return Config{}, fmt.Errorf("failed to generate default id pem: %w", err)
+	}
+	viper.SetDefault("id", idPem)
+	armoredPrivkey, err := crypto.GeneratePGPKey(user.Username)
+	if err != nil {
+		return Config{}, fmt.Errorf("failed to generate default pgp key: %w", err)
+	}
+	viper.SetDefault("private_key", armoredPrivkey)
 	viper.SetDefault("passphrase", base64.StdEncoding.EncodeToString([]byte(defaultPassphrase)))
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -62,7 +82,7 @@ func LoadConfig() Config {
 	}
 
 	var cfg Config
-	err := viper.Unmarshal(&cfg)
+	err = viper.Unmarshal(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,21 +91,22 @@ func LoadConfig() Config {
 	// save config after load default
 	viper.WriteConfig()
 
-	return cfg
-}
+	// set home username
+	cfg.Username = user.Username
 
-func getDefaultID() string {
-	prvKey, _, err := crypto.NewKeyPair()
+	// unmarshal id
+	idPK, err := crypto.UnmarshalIDPrivateKey(cfg.IDPem)
 	if err != nil {
-		log.Fatal(err)
+		return cfg, fmt.Errorf("failed to unmarshal id private key: %w", err)
 	}
-	prvKeyBytes, err := crypto.MarshalPrivateKey(prvKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return string(prvKeyBytes)
-}
+	cfg.ID = idPK
 
-func getDefaultPrivateKey() string {
-	return ""
+	// unmarshal pgp private key
+	pgpPrivateKey, err := crypto.UnmarshalPGPKey(cfg.PGPPrivateKeyArmored, nil)
+	if err != nil {
+		return cfg, fmt.Errorf("failed to unmarshal gpg private key: %w", err)
+	}
+	cfg.PGPPrivateKey = pgpPrivateKey
+
+	return cfg, nil
 }

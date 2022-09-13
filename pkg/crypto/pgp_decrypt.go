@@ -1,51 +1,34 @@
 package crypto
 
 import (
-	"io"
-	"io/ioutil"
-
-	"golang.org/x/crypto/openpgp"
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/pkg/errors"
 )
 
 type PGPDecrypter struct {
-	entityList openpgp.EntityList
+	keyring *crypto.KeyRing
 }
 
-func NewPGPDecrypter() (*PGPDecrypter, error) {
+func NewPGPDecrypter(privKey *crypto.Key) (*PGPDecrypter, error) {
+	if !privKey.IsPrivate() {
+		return nil, errors.New("the key is not private key")
+	}
+
+	keyRing, err := crypto.NewKeyRing(privKey)
+	if err != nil {
+		return nil, err
+	}
+
 	return &PGPDecrypter{
-		entityList: openpgp.EntityList{},
+		keyring: keyRing,
 	}, nil
 }
 
-func (g *PGPDecrypter) AddPrivate(keyringFileBuffer io.Reader, passphrase *string) error {
-	entityList, err := openpgp.ReadArmoredKeyRing(keyringFileBuffer)
+func (g *PGPDecrypter) DecryptMessage(encrypted []byte) ([]byte, error) {
+	message, err := g.keyring.Decrypt(crypto.NewPGPMessage(encrypted), nil, 0)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "unable to decrypt message")
 	}
 
-	entity := entityList[0]
-
-	if passphrase != nil {
-		passphraseByte := []byte(*passphrase)
-		entity.PrivateKey.Decrypt(passphraseByte)
-		for _, subkey := range entity.Subkeys {
-			subkey.PrivateKey.Decrypt(passphraseByte)
-		}
-	}
-
-	g.entityList = entityList
-	return nil
-}
-
-func (g *PGPDecrypter) DecryptFile(reader io.Reader, writer io.Writer) error {
-	messageDetails, err := openpgp.ReadMessage(reader, g.entityList, nil, nil)
-	if err != nil {
-		return err
-	}
-	bytes, err := ioutil.ReadAll(messageDetails.UnverifiedBody)
-	if err != nil {
-		return err
-	}
-	_, err = writer.Write(bytes)
-	return err
+	return message.GetBinary(), nil
 }

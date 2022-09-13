@@ -6,12 +6,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (s *StreamHandler) EncodeClipboardData(data *ClipboardData) ([]byte, error) {
+func (s *StreamHandler) EncodeClipboardData(deviceId string, data *ClipboardData) ([]byte, error) {
 	// create proto clipboard data
 	clipboardDataBytes, err := proto.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling clipboard data: %w", err)
 	}
+
+	// encrypt clipboard data
+	s.DeviceManager.GetDevice(deviceId)
 
 	// append DATA TYPE
 	clipboardDataBytes = append(clipboardDataBytes, DATA_TYPE_CLIPBOARD)
@@ -52,8 +55,14 @@ func (s *StreamHandler) DecodeData(bytes []byte) (*ClipboardData, *DeviceData, e
 
 	switch dataType {
 	case DATA_TYPE_CLIPBOARD:
+		// decrypt clipboard data
+		decryped, err := s.pgpDecrypter.DecryptMessage(bytes)
+		if err != nil {
+			return nil, nil, fmt.Errorf("error to decrypt clipboard data: %w", err)
+		}
+
 		clipboardData := &ClipboardData{}
-		err := proto.Unmarshal(bytes, clipboardData)
+		err = proto.Unmarshal(decryped, clipboardData)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error unmarshaling clipboard data: %w", err)
 		}

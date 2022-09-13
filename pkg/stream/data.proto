@@ -4,17 +4,8 @@ package stream;
 option go_package = "github.com/ntsd/cross-clipboard/pkg/stream";
 
 message DeviceData {
-  enum OS {
-    LINUX = 0;
-    DARWIN = 1;
-    WINDOWS = 2;
-    ANDROID = 3;
-    IOS = 4;
-    OTHER = 5;
-  }
-  
-  OS os = 1;
-  string name = 2;
+  string name = 1;
+  string os = 2;
   bytes public_key = 3;
 }
 

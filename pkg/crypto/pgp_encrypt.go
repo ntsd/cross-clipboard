@@ -1,48 +1,34 @@
 package crypto
 
 import (
-	"io"
-
-	"golang.org/x/crypto/openpgp"
-	"golang.org/x/crypto/openpgp/armor"
-	"golang.org/x/crypto/openpgp/packet"
+	"github.com/ProtonMail/gopenpgp/v2/crypto"
+	"github.com/pkg/errors"
 )
 
 type PGPEncrypter struct {
-	recipient []*openpgp.Entity
+	keyring *crypto.KeyRing
 }
 
-func NewPGPEncrypter() (*PGPEncrypter, error) {
+func NewPGPEncrypter(pubKey *crypto.Key) (*PGPEncrypter, error) {
+	if pubKey.IsPrivate() {
+		return nil, errors.New("the key is not public key")
+	}
+
+	keyRing, err := crypto.NewKeyRing(pubKey)
+	if err != nil {
+		return nil, err
+	}
+
 	return &PGPEncrypter{
-		recipient: []*openpgp.Entity{},
+		keyring: keyRing,
 	}, nil
 }
 
-func (g *PGPEncrypter) AddPublic(pubKey io.Reader) error {
-	block, err := armor.Decode(pubKey)
+func (g *PGPEncrypter) EncryptMessage(message []byte) ([]byte, error) {
+	pgpMessage, err := g.keyring.Encrypt(crypto.NewPlainMessage(message), nil)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "unable to encrypt message")
 	}
 
-	entity, err := openpgp.ReadEntity(packet.NewReader(block.Body))
-	if err != nil {
-		return err
-	}
-
-	g.recipient = append(g.recipient, entity)
-	return nil
-}
-
-func (g *PGPEncrypter) EncryptFile(reader io.Reader, writer io.Writer) error {
-	wc, err := openpgp.Encrypt(writer, g.recipient, nil, &openpgp.FileHints{IsBinary: true}, nil)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(wc, reader)
-	if err != nil {
-		return err
-	}
-
-	return wc.Close()
+	return pgpMessage.GetBinary(), nil
 }

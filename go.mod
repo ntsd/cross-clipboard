@@ -12,6 +12,10 @@ require (
 )
 
 require (
+	github.com/ProtonMail/go-crypto v0.0.0-20220822140716-1678d6eb0cbe // indirect
+	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
+	github.com/ProtonMail/gopenpgp v1.0.0 // indirect
+	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
@@ -21,6 +25,7 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -35,6 +40,7 @@ require (
 )
 
 require (
+	github.com/ProtonMail/gopenpgp/v2 v2.4.10
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
