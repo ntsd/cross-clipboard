@@ -95,6 +95,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 			break
 		}
 
+		s.LogChan <- fmt.Sprintf("received device size %d", dataSize)
 		buffer := make([]byte, dataSize)
 		_, err = reader.Read(buffer)
 		if err != nil {
