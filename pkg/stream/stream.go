@@ -149,52 +149,78 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 // CreateWriteData handle clipboad channel and write to all peers and host
 func (s *StreamHandler) CreateWriteData() {
 	// waiting for clipboard data
-	for clipboardBytes := range s.ClipboardManager.ReadChannel {
-		length := len(clipboardBytes)
-		if length == 0 {
-			// ignore empty clipboard
-			continue
-		}
-
-		now := time.Now()
-
-		// set current clipbaord to avoid recursive
-		s.ClipboardManager.AddClipboard(clipboard.Clipboard{
-			Data: clipboardBytes,
-			Size: uint32(length),
-			Time: now,
-		})
-
-		clipboardData := &ClipboardData{
-			IsImage:  false,
-			Data:     clipboardBytes,
-			DataSize: uint32(length),
-			Time:     now.Unix(),
-		}
-
-		// send data to each devices
-		for name, dv := range s.DeviceManager.Devices {
-			if dv.PgpEncrypter == nil {
-				s.ErrorChan <- fmt.Errorf("not found pgp encrypter for device %s", name)
-				continue
+loop:
+	for {
+		select {
+		case textBytes, ok := <-s.ClipboardManager.ReadTextChannel:
+			if !ok {
+				break loop
 			}
-
-			s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d data: %s", name, length, string(clipboardBytes))
-
-			clipboardDataBytes, err := s.EncodeClipboardData(dv, clipboardData)
+			err := s.sendClipboard(textBytes, false)
 			if err != nil {
-				s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
-				continue
+				s.ErrorChan <- fmt.Errorf("error sending text clipboard data: %w", err)
+				break loop
 			}
-
-			err = s.WriteData(dv.Writer, clipboardDataBytes)
+		case imageBytes, ok := <-s.ClipboardManager.ReadImageChannel:
+			if !ok {
+				break loop
+			}
+			err := s.sendClipboard(imageBytes, true)
 			if err != nil {
-				s.LogChan <- fmt.Sprintf("ending write stream %s", name)
-				s.DeviceManager.RemoveDevice(dv)
+				s.ErrorChan <- fmt.Errorf("error sending image clipboard data: %w", err)
+				break loop
 			}
 		}
 	}
 	s.LogChan <- fmt.Sprintf("ending write streams")
+}
+
+func (s *StreamHandler) sendClipboard(bytes []byte, isImage bool) error {
+	length := len(bytes)
+	if length == 0 {
+		// ignore empty clipboard data
+		return nil
+	}
+
+	now := time.Now()
+
+	// set current clipbaord to avoid recursive
+	s.ClipboardManager.AddClipboard(clipboard.Clipboard{
+		Data: bytes,
+		Size: uint32(length),
+		Time: now,
+	})
+
+	clipboardData := &ClipboardData{
+		IsImage:  isImage,
+		Data:     bytes,
+		DataSize: uint32(length),
+		Time:     now.Unix(),
+	}
+
+	// send data to each devices
+	for name, dv := range s.DeviceManager.Devices {
+		if dv.PgpEncrypter == nil {
+			s.ErrorChan <- fmt.Errorf("not found pgp encrypter for device %s", name)
+			continue
+		}
+
+		s.LogChan <- fmt.Sprintf("sending data to peer: %s size: %d", name, length)
+
+		clipboardDataBytes, err := s.EncodeClipboardData(dv, clipboardData)
+		if err != nil {
+			s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
+			continue
+		}
+
+		err = s.WriteData(dv.Writer, clipboardDataBytes)
+		if err != nil {
+			s.LogChan <- fmt.Sprintf("ending write stream %s", name)
+			s.DeviceManager.RemoveDevice(dv)
+		}
+	}
+
+	return nil
 }
 
 // WriteData write data to the writer

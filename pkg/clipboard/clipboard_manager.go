@@ -12,7 +12,8 @@ import (
 // ClipboardManager struct for clipbaord manager
 type ClipboardManager struct {
 	Config            config.Config
-	ReadChannel       <-chan []byte
+	ReadTextChannel   <-chan []byte
+	ReadImageChannel  <-chan []byte
 	Clipboards        []Clipboard
 	ClipboardsChannel chan []Clipboard
 	CurrentClipboard  []byte
@@ -26,11 +27,13 @@ func NewClipboardManager(cfg config.Config) *ClipboardManager {
 		panic(err)
 	}
 
-	ch := clipboard.Watch(context.Background(), clipboard.FmtText)
+	textCh := clipboard.Watch(context.Background(), clipboard.FmtText)
+	imgCh := clipboard.Watch(context.Background(), clipboard.FmtImage)
 
 	return &ClipboardManager{
 		Config:            cfg,
-		ReadChannel:       ch,
+		ReadTextChannel:   textCh,
+		ReadImageChannel:  imgCh,
 		ClipboardsChannel: make(chan []Clipboard),
 		Clipboards:        []Clipboard{},
 	}
@@ -49,7 +52,7 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 // WriteClipboard write os clipbaord
 func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard.Data) != 0 {
-		// TODO avoid clipboard read channel after write
+		// TODO avoid clipboard read channel after write by this
 		clipboard.Write(clipboard.FmtText, newClipboard.Data)
 	}
 }

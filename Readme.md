@@ -46,31 +46,3 @@ go install golang.org/x/mobile/cmd/gomobile@latest
 ## Proto gen
 
 `protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative data.proto`
-
-## References
-
-<https://github.com/rivo/tview>
-
-<https://inblockchainwetrust.medium.com/running-go-from-android-ios-tutorial-7f1d456c5b0f>
-
-<https://github.com/golang/go/wiki/Mobile>
-
-<https://pkg.go.dev/golang.org/x/mobile/example>
-
-<https://github.com/gomatcha/matcha>
-
-<https://stackoverflow.com/questions/41607634/gomobile-callback-forward-realtime-downloaded-content-to-android>
-
-<https://www.sajalkayan.com/post/android-apps-golang.html>
-
-<https://sites.google.com/a/athaydes.com/renato-athaydes/posts/buildingamobilefrontendforagoapplicationusingflutter>
-
-<https://en.wikipedia.org/wiki/Secure_multi-party_computation>
-
-<https://github.com/tuneinsight/lattigo>
-
-<https://goteleport.com/blog/comparing-ssh-keys/>
-
-<https://medium.com/learning-the-go-programming-language/streaming-io-in-go-d93507931185>
-
-<https://stackoverflow.com/questions/13660864/reading-specific-number-of-bytes-from-a-buffered-reader-in-golang>
