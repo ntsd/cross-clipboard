@@ -3,6 +3,7 @@ package stream
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"runtime"
 	"time"
 
@@ -101,10 +102,15 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		}
 
 		s.LogChan <- fmt.Sprintf("received data size %d", dataSize)
+
 		buffer := make([]byte, dataSize)
-		readBytes, err := reader.Read(buffer)
+		readBytes, err := io.ReadFull(reader, buffer)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error reading from buffer: %w", err)
+			break
+		}
+		if readBytes != dataSize {
+			s.ErrorChan <- fmt.Errorf("not reading full bytes read: %d size: %d", readBytes, dataSize)
 			break
 		}
 		s.LogChan <- fmt.Sprintf("read data size %d", readBytes)
