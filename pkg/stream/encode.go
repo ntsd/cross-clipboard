@@ -27,7 +27,7 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *Cl
 	dataType := DATA_TYPE_CLIPBOARD
 
 	// encrypt clipboard data
-	if dataSize > 1024 {
+	if dataSize < 1024 {
 		clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
 		if err != nil {
 			return nil, fmt.Errorf("error to encrypt clipboard data: %w", err)
