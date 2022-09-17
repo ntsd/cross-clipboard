@@ -53,6 +53,10 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard.Data) != 0 {
 		// TODO avoid clipboard read channel after write by this
+		if newClipboard.IsImage {
+			clipboard.Write(clipboard.FmtImage, newClipboard.Data)
+			return
+		}
 		clipboard.Write(clipboard.FmtText, newClipboard.Data)
 	}
 }
