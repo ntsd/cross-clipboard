@@ -4,11 +4,12 @@ A multi device clipboard sharing over p2p in lan network.
 
 ## TODO
 
+- E2E Encryption (Done)
+- Image clipboard (Done)
 - Terminal GUI
+- Avoid sending data back to the peer it received from
 - Verify Peer
-- E2E Encryption
 - Mobile Support
-- Image clipboard
 
 ## Technology
 

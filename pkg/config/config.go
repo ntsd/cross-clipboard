@@ -23,8 +23,9 @@ type Config struct {
 	ListenPort int    `mapstructure:"listen_port"`
 
 	// Clipbaord Config
-	MaxSize    uint32 `mapstructure:"max_size"`    // max size to send clipboard
-	MaxHistory int    `mapstructure:"max_history"` // max number of history clipboard
+	IsEncryptEnabled bool   `mapstructure:"is_encrypt_enabled"` // encryption clipbaord enabled
+	MaxSize          uint32 `mapstructure:"max_size"`           // max size to send clipboard
+	MaxHistory       int    `mapstructure:"max_history"`        // max number of history clipboard
 
 	// UI Config
 	TerminalMode bool `mapstructure:"terminal_mode"` // is terminal mode or ui mode
@@ -55,6 +56,7 @@ func LoadConfig() (Config, error) {
 	viper.SetDefault("listen_host", "0.0.0.0")
 	viper.SetDefault("listen_port", 4001)
 
+	viper.SetDefault("is_encrypt_enabled", true)
 	viper.SetDefault("max_size", 1<<24) // 16MB
 	viper.SetDefault("max_history", 10)
 

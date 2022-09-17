@@ -23,11 +23,11 @@ func ClipboardBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 				row := i + 1
 				table.SetCell(row, 0, tview.NewTableCell(clipboard.Time.Format("15:04:05")))
 				table.SetCell(row, 1, tview.NewTableCell(strconv.FormatUint(uint64(clipboard.Size), 10)))
-				if clipboard.Size > 50 {
-					table.SetCell(row, 2, tview.NewTableCell(string(clipboard.Data[:50])))
-				} else {
-					table.SetCell(row, 2, tview.NewTableCell(string(clipboard.Data)))
+				if clipboard.IsImage {
+					table.SetCell(row, 2, tview.NewTableCell("image"))
+					continue
 				}
+				table.SetCell(row, 2, tview.NewTableCell(limitTextLength(string(clipboard.Data), 10)))
 			}
 		}
 	}()
@@ -44,16 +44,16 @@ func DevicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 	go func() {
 		for devices := range cc.DeviceManager.DevicesChannel {
 			table.Clear()
-			table.SetCell(0, 0, tview.NewTableCell("id").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+			table.SetCell(0, 0, tview.NewTableCell("name").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			table.SetCell(0, 1, tview.NewTableCell("address").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 
 			row := 1
 			for id, device := range devices {
-				if len(id) > 10 {
-					table.SetCell(row, 0, tview.NewTableCell(id[:10]))
-				} else {
-					table.SetCell(row, 0, tview.NewTableCell(id))
+				name := device.Name
+				if name == "" {
+					name = id
 				}
+				table.SetCell(row, 0, tview.NewTableCell(limitTextLength(name, 10)))
 				table.SetCell(row, 1, tview.NewTableCell(device.AddressInfo.Addrs[0].String()))
 				row++
 			}
