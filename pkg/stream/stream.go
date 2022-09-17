@@ -216,7 +216,7 @@ func (s *StreamHandler) sendClipboard(bytes []byte, isImage bool) error {
 
 		err = s.WriteData(dv.Writer, clipboardDataBytes)
 		if err != nil {
-			s.LogChan <- fmt.Sprintf("ending write stream %s", name)
+			s.LogChan <- fmt.Sprintf("ending write stream for peer: %s", name)
 			s.DeviceManager.RemoveDevice(dv)
 		}
 	}
