@@ -95,13 +95,19 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 			break
 		}
 
-		s.LogChan <- fmt.Sprintf("received device size %d", dataSize)
+		if dataSize <= 0 {
+			s.ErrorChan <- fmt.Errorf("data size is less than 0: %d", dataSize)
+			break
+		}
+
+		s.LogChan <- fmt.Sprintf("received data size %d", dataSize)
 		buffer := make([]byte, dataSize)
-		_, err = reader.Read(buffer)
+		readBytes, err := reader.Read(buffer)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error reading from buffer: %w", err)
 			break
 		}
+		s.LogChan <- fmt.Sprintf("read data size %d", readBytes)
 
 		clipboardData, deviceData, err := s.DecodeData(buffer)
 		if err != nil {
