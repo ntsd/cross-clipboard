@@ -3,10 +3,11 @@ package stream
 import (
 	"fmt"
 
+	"github.com/ntsd/cross-clipboard/pkg/protobuf"
 	"google.golang.org/protobuf/proto"
 )
 
-func (s *StreamHandler) DecodeData(bytes []byte) (*ClipboardData, *DeviceData, error) {
+func (s *StreamHandler) DecodeData(bytes []byte) (*protobuf.ClipboardData, *protobuf.DeviceData, error) {
 	length := len(bytes)
 	if length <= 1 {
 		return nil, nil, fmt.Errorf("error decoding data: data length <= 0")
@@ -29,14 +30,14 @@ func (s *StreamHandler) DecodeData(bytes []byte) (*ClipboardData, *DeviceData, e
 			bytes = decryped
 		}
 
-		clipboardData := &ClipboardData{}
+		clipboardData := &protobuf.ClipboardData{}
 		err := proto.Unmarshal(bytes, clipboardData)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error unmarshaling clipboard data: %w", err)
 		}
 		return clipboardData, nil, nil
 	case DATA_TYPE_DEVICE:
-		deviceData := &DeviceData{}
+		deviceData := &protobuf.DeviceData{}
 		err := proto.Unmarshal(bytes, deviceData)
 		if err != nil {
 			return nil, nil, fmt.Errorf("error unmarshaling device data: %w", err)

@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"io"
 	"runtime"
-	"time"
 
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
-	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/device"
+	"github.com/ntsd/cross-clipboard/pkg/protobuf"
 )
 
 // CreateReadData craete a new read streaming for host or peer
@@ -21,7 +20,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		return
 	}
 	s.LogChan <- fmt.Sprintf("sending device info and public key to %s", dv.AddressInfo.ID.Pretty())
-	deviceData, err := s.EncodeDeviceData(&DeviceData{
+	deviceData, err := s.EncodeDeviceData(&protobuf.DeviceData{
 		Name:      s.Config.Username,
 		Os:        runtime.GOOS,
 		PublicKey: pub,
@@ -67,33 +66,14 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 
 		if clipboardData != nil {
 			s.LogChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
-			s.ClipboardManager.WriteClipboard(clipboard.Clipboard{
-				IsImage: clipboardData.IsImage,
-				Data:    clipboardData.Data,
-				Size:    clipboardData.DataSize,
-				Time:    time.UnixMicro(clipboardData.Time),
-			})
+			s.ClipboardManager.WriteClipboard(clipboard.FromProtobuf(clipboardData))
 		}
 
 		if deviceData != nil {
 			s.LogChan <- fmt.Sprintf("received device data, peer: %s", dv.AddressInfo.ID.Pretty())
 			s.LogChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
 
-			dv.Name = deviceData.Name
-			dv.OS = deviceData.Os
-			dv.PublicKey = deviceData.PublicKey
-
-			publicKey, err := crypto.ByteToPGPKey(deviceData.PublicKey)
-			if err != nil {
-				s.ErrorChan <- fmt.Errorf("error to create pgp public key: %w", err)
-				break
-			}
-			pgpEncrypter, err := crypto.NewPGPEncrypter(publicKey)
-			if err != nil {
-				s.ErrorChan <- fmt.Errorf("error to create pgp encrypter: %w", err)
-				break
-			}
-			dv.PgpEncrypter = pgpEncrypter
+			dv.UpdateFromProtobuf(deviceData)
 
 			dv.Status = device.StatusConnecting
 

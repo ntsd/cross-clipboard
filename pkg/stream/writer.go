@@ -47,19 +47,17 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 
 	now := time.Now()
 
-	// set current clipbaord to avoid recursive
-	s.ClipboardManager.AddClipboard(clipboard.Clipboard{
-		Data: clipboardBytes,
-		Size: uint32(clipboardLength),
-		Time: now,
-	})
-
-	clipboardData := &ClipboardData{
-		IsImage:  isImage,
-		Data:     clipboardBytes,
-		DataSize: uint32(clipboardLength),
-		Time:     now.Unix(),
+	cb := clipboard.Clipboard{
+		IsImage: isImage,
+		Data:    clipboardBytes,
+		Size:    uint32(clipboardLength),
+		Time:    now,
 	}
+
+	// set current clipbaord to avoid recursive
+	s.ClipboardManager.AddClipboard(cb)
+
+	clipboardData := cb.ToProtobuf()
 
 	// send data to each devices
 	for name, dv := range s.DeviceManager.Devices {

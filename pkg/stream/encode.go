@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/ntsd/cross-clipboard/pkg/device"
+	"github.com/ntsd/cross-clipboard/pkg/protobuf"
 	"google.golang.org/protobuf/proto"
 )
 
 // EncodeClipboardData encode data for stream package | size(bytes) int 4 bytes | data type 1 byte | message n bytes |
-func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *ClipboardData) ([]byte, error) {
+func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *protobuf.ClipboardData) ([]byte, error) {
 	packageData := []byte{}
 
 	// create proto clipboard data
@@ -42,7 +43,7 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *Cl
 }
 
 // EncodeDeviceData encode data for stream package | size(bytes) int 4 bytes | data type 1 byte | message n bytes |
-func (s *StreamHandler) EncodeDeviceData(data *DeviceData) ([]byte, error) {
+func (s *StreamHandler) EncodeDeviceData(data *protobuf.DeviceData) ([]byte, error) {
 	packageData := []byte{}
 
 	// create proto device data

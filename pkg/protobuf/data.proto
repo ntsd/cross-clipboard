@@ -1,7 +1,7 @@
 syntax = "proto3";
 package stream;
 
-option go_package = "github.com/ntsd/cross-clipboard/pkg/stream";
+option go_package = "github.com/ntsd/cross-clipboard/pkg/protobuf";
 
 message DeviceData {
   string name = 1;
