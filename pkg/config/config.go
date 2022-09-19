@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/base64"
 	"fmt"
 	"log"
 	"os/user"
@@ -12,8 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const defaultPassphrase = "PleaseChangeThis!@#$"
-
 // Config config struct for cross clipbaord
 type Config struct {
 	// Network Config
@@ -23,9 +20,9 @@ type Config struct {
 	ListenPort int    `mapstructure:"listen_port"`
 
 	// Clipbaord Config
-	IsEncryptEnabled bool   `mapstructure:"is_encrypt_enabled"` // encryption clipbaord enabled
-	MaxSize          uint32 `mapstructure:"max_size"`           // max size to send clipboard
-	MaxHistory       int    `mapstructure:"max_history"`        // max number of history clipboard
+	EncryptEnabled bool   `mapstructure:"encrypt_enabled"` // encryption clipbaord enabled
+	MaxSize        uint32 `mapstructure:"max_size"`        // max size to send clipboard
+	MaxHistory     int    `mapstructure:"max_history"`     // max number of history clipboard
 
 	// UI Config
 	TerminalMode bool `mapstructure:"terminal_mode"` // is terminal mode or ui mode
@@ -38,7 +35,6 @@ type Config struct {
 	PGPPrivateKey        *gopenpgp.Key     `mapstructure:"-"`           // pgp private key for e2e encryption
 	PGPPrivateKeyArmored string            `mapstructure:"private_key"` // armor pgp private key
 	AutoTrust            bool              `mapstructure:"auto_trust"`  // auto trust device
-	Passphrase           string            `mapstructure:"passphrase"`  // passphrase in base64 encoded, will use to encrypt public key
 }
 
 func LoadConfig() (Config, error) {
@@ -56,7 +52,7 @@ func LoadConfig() (Config, error) {
 	viper.SetDefault("listen_host", "0.0.0.0")
 	viper.SetDefault("listen_port", 4001)
 
-	viper.SetDefault("is_encrypt_enabled", true)
+	viper.SetDefault("encrypt_enabled", true)
 	viper.SetDefault("max_size", 1<<24) // 16MB
 	viper.SetDefault("max_history", 10)
 
@@ -73,7 +69,6 @@ func LoadConfig() (Config, error) {
 		return Config{}, fmt.Errorf("failed to generate default pgp key: %w", err)
 	}
 	viper.SetDefault("private_key", armoredPrivkey)
-	viper.SetDefault("passphrase", base64.StdEncoding.EncodeToString([]byte(defaultPassphrase)))
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

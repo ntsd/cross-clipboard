@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
+	"github.com/ntsd/cross-clipboard/pkg/device"
 )
 
 // CreateWriteData handle clipboad channel and write to all peers and host
@@ -63,6 +64,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 	for name, dv := range s.DeviceManager.Devices {
 		if dv.PgpEncrypter == nil {
 			s.ErrorChan <- fmt.Errorf("not found pgp encrypter for device %s", name)
+			dv.Status = device.StatusPending
 			// todo request for public key
 			continue
 		}
@@ -72,13 +74,14 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 		clipboardDataBytes, err := s.EncodeClipboardData(dv, clipboardData)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
+			dv.Status = device.StatusError
 			continue
 		}
 
 		err = s.WriteData(dv.Writer, clipboardDataBytes)
 		if err != nil {
 			s.LogChan <- fmt.Sprintf("error to send data for peer: %s", name)
-			s.DeviceManager.RemoveDevice(dv)
+			dv.Status = device.StatusError
 		}
 	}
 

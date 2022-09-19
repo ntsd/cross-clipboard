@@ -28,6 +28,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 	err = s.WriteData(dv.Writer, deviceData)
 	if err != nil {
 		s.ErrorChan <- fmt.Errorf("cannot send device data to %s: %w", dv.AddressInfo.ID.Pretty(), err)
+		dv.Status = device.StatusError
 		return
 	}
 
@@ -36,11 +37,13 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		dataSize, err := readDataSize(reader)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error reading data size: %w", err)
+			dv.Status = device.StatusError
 			break
 		}
 
 		if dataSize <= 0 {
 			s.ErrorChan <- fmt.Errorf("data size is less than 0: %d", dataSize)
+			dv.Status = device.StatusError
 			break
 		}
 
@@ -50,10 +53,12 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		readBytes, err := io.ReadFull(reader, buffer)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error reading from buffer: %w", err)
+			dv.Status = device.StatusError
 			break
 		}
 		if readBytes != dataSize {
 			s.ErrorChan <- fmt.Errorf("not reading full bytes read: %d size: %d", readBytes, dataSize)
+			dv.Status = device.StatusError
 			break
 		}
 		s.LogChan <- fmt.Sprintf("read data size %d", readBytes)
@@ -61,7 +66,8 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		clipboardData, deviceData, err := s.DecodeData(buffer)
 		if err != nil {
 			s.ErrorChan <- fmt.Errorf("error decoding data: %w", err)
-			continue
+			dv.Status = device.StatusError
+			break
 		}
 
 		if clipboardData != nil {
@@ -75,7 +81,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 
 			dv.UpdateFromProtobuf(deviceData)
 
-			dv.Status = device.StatusConnecting
+			dv.Status = device.StatusConnected
 
 			s.DeviceManager.UpdateDevice(dv)
 		}

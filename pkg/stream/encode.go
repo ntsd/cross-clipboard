@@ -21,7 +21,7 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 	dataType := DATA_TYPE_CLIPBOARD
 
 	// encrypt clipboard data
-	if s.Config.IsEncryptEnabled {
+	if s.Config.EncryptEnabled {
 		clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
 		if err != nil {
 			return nil, fmt.Errorf("error to encrypt clipboard data: %w", err)

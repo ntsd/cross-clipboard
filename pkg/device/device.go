@@ -10,22 +10,6 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/protobuf"
 )
 
-// DeviceStatus device status
-type DeviceStatus int
-
-const (
-	// StatusPending the device waiting to handshake and trust the device
-	StatusPending DeviceStatus = iota
-	// StatusConnecting the device is trusted and connecting
-	StatusConnecting
-	// StatusConnecting the device is trusted but disconnecting or offline
-	StatusDisconnecting
-	// StatusError found a error in the device should disconnect and reconnect
-	StatusError
-	// StatusBlocked the device is blocked by the user
-	StatusBlocked
-)
-
 // Device struct for peer
 type Device struct {
 	AddressInfo peer.AddrInfo
