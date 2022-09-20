@@ -8,7 +8,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func (v *View) clipboardBox(cc *crossclipboard.CrossClipboard, hiddenText bool) tview.Primitive {
+func (v *View) newClipboardBox(cc *crossclipboard.CrossClipboard, hiddenText bool) tview.Primitive {
 	table := tview.NewTable().
 		SetFixed(1, 1)
 

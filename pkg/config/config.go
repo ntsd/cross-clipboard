@@ -20,9 +20,9 @@ type Config struct {
 	ListenPort int    `mapstructure:"listen_port"`
 
 	// Clipbaord Config
-	EncryptEnabled bool   `mapstructure:"encrypt_enabled"` // encryption clipbaord enabled
-	MaxSize        uint32 `mapstructure:"max_size"`        // max size to send clipboard
-	MaxHistory     int    `mapstructure:"max_history"`     // max number of history clipboard
+	EncryptEnabled bool `mapstructure:"encrypt_enabled"` // encryption clipbaord enabled
+	MaxSize        int  `mapstructure:"max_size"`        // max size to send clipboard
+	MaxHistory     int  `mapstructure:"max_history"`     // max number of history clipboard
 
 	// UI Config
 	TerminalMode bool `mapstructure:"terminal_mode"` // is terminal mode or ui mode
@@ -69,6 +69,7 @@ func LoadConfig() (Config, error) {
 		return Config{}, fmt.Errorf("failed to generate default pgp key: %w", err)
 	}
 	viper.SetDefault("private_key", armoredPrivkey)
+	viper.SetDefault("auto_trust", true)
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {

@@ -6,7 +6,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func (v *View) NewLogPage() *Page {
+func (v *View) newLogPage() *Page {
 	textView := tview.NewTextView().
 		SetDynamicColors(true).
 		SetRegions(true).

@@ -6,9 +6,11 @@ A multi device clipboard sharing over p2p in lan network.
 
 - E2E Encryption (Done)
 - Image clipboard (Done)
-- Terminal GUI
+- Trust device (Done)
+- Terminal GUI (Ongoing)
+- Save device info to storage
+- Handle disconnect and error
 - Avoid sending data back to the peer it received from
-- Trust device
 - Mobile Support
 - Add private key pass phrase
 

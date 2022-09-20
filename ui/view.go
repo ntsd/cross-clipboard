@@ -29,9 +29,9 @@ func NewView(cc *crossclipboard.CrossClipboard) *View {
 	}
 
 	v.pages = []*Page{
-		v.NewHomePage(),
-		v.NewConfigPage(),
-		v.NewLogPage(),
+		v.newHomePage(),
+		v.newSettingPage(),
+		v.newLogPage(),
 	}
 
 	return v
@@ -61,8 +61,17 @@ func (v *View) Start() {
 	v.menuBar.Highlight("0")
 
 	v.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		// check form text input to avoid menu changing
+		focusFormIdx, _ := v.pages[1].Content.(*tview.Form).GetFocusedItemIndex()
+		if contains([]int{1, 2, 5, 6, 7}, focusFormIdx) {
+			return event
+		}
+
 		if unicode.IsDigit(event.Rune()) {
-			v.goToPage(int(event.Rune() - '1'))
+			pageNum := int(event.Rune() - '1')
+			if pageNum < len(v.pages) {
+				v.goToPage(pageNum)
+			}
 		}
 		return event
 	})

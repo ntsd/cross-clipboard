@@ -9,7 +9,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func (v *View) devicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
+func (v *View) newDevicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 	table := tview.NewTable().
 		SetFixed(1, 1)
 
@@ -18,7 +18,8 @@ func (v *View) devicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 			table.Clear()
 			table.SetCell(0, 0, tview.NewTableCell("name").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			table.SetCell(0, 1, tview.NewTableCell("status").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
-			table.SetCell(0, 2, tview.NewTableCell("address").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+			table.SetCell(0, 2, tview.NewTableCell("os").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+			table.SetCell(0, 3, tview.NewTableCell("address").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 
 			row := 1
 			for id, dv := range devices {
@@ -32,6 +33,7 @@ func (v *View) devicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 				}
 				table.SetCell(row, 0, tview.NewTableCell(limitTextLength(name, 10)))
 				table.SetCell(row, 1, tview.NewTableCell(dv.Status.ToString()))
+				table.SetCell(row, 2, tview.NewTableCell(dv.OS))
 
 				addressStr := ""
 				for _, address := range dv.AddressInfo.Addrs {
@@ -40,7 +42,7 @@ func (v *View) devicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
 					}
 				}
 
-				table.SetCell(row, 2, tview.NewTableCell(addressStr))
+				table.SetCell(row, 3, tview.NewTableCell(addressStr))
 				row++
 			}
 		}
