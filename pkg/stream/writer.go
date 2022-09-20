@@ -62,9 +62,14 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 
 	// send data to each devices
 	for name, dv := range s.DeviceManager.Devices {
+		if dv.Status != device.StatusConnected {
+			s.ErrorChan <- fmt.Errorf("device %s status is not connected", name)
+			continue
+		}
+
 		if dv.PgpEncrypter == nil {
 			s.ErrorChan <- fmt.Errorf("not found pgp encrypter for device %s", name)
-			dv.Status = device.StatusPending
+			dv.Status = device.StatusError
 			// todo request for public key
 			continue
 		}

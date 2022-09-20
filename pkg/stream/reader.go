@@ -80,8 +80,11 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 			s.LogChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
 
 			dv.UpdateFromProtobuf(deviceData)
+			dv.Status = device.StatusPending
 
-			dv.Status = device.StatusConnected
+			if s.Config.AutoTrust {
+				dv.Status = device.StatusConnected
+			}
 
 			s.DeviceManager.UpdateDevice(dv)
 		}

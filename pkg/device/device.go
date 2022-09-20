@@ -42,6 +42,11 @@ func NewDevice(
 	}
 }
 
+// Trust trust this device and change status to connected
+func (dv *Device) Trust() {
+	dv.Status = StatusConnected
+}
+
 // UpdateFromProtobuf update device from protobuf device data
 func (dv *Device) UpdateFromProtobuf(deviceData *protobuf.DeviceData) error {
 	dv.Name = deviceData.Name

@@ -8,7 +8,7 @@ A multi device clipboard sharing over p2p in lan network.
 - Image clipboard (Done)
 - Terminal GUI
 - Avoid sending data back to the peer it received from
-- Verify Peer
+- Trust device
 - Mobile Support
 - Add private key pass phrase
 
