@@ -20,7 +20,7 @@ func (v *View) newLogPage() *Page {
 			case log := <-v.CrossClipboard.LogChan:
 				fmt.Fprint(textView, fmt.Sprintf("[blue]log:[white] %s\n", log))
 
-			case err := <-v.CrossClipboard.ErrChan:
+			case err := <-v.CrossClipboard.ErrorChan:
 				fmt.Fprint(textView, fmt.Sprintf("[red]err: %s[white]\n", err))
 			}
 		}

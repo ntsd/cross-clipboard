@@ -2,9 +2,9 @@ package crypto
 
 import (
 	"encoding/pem"
-	"fmt"
 
 	"github.com/libp2p/go-libp2p-core/crypto"
+	"github.com/ntsd/cross-clipboard/pkg/xerror"
 )
 
 const (
@@ -21,7 +21,7 @@ func NewKeyPair() (crypto.PrivKey, crypto.PubKey, error) {
 func MarshalIDPrivateKey(prvKey crypto.PrivKey) (string, error) {
 	x509Encoded, err := crypto.MarshalPrivateKey(prvKey)
 	if err != nil {
-		return "", fmt.Errorf("unable to marshal id private key: %w", err)
+		return "", xerror.NewFatalError("unable to marshal id private key").Wrap(err)
 	}
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "ID PRIVATE KEY", Bytes: x509Encoded})
 	return string(pemEncoded), nil

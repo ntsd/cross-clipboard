@@ -5,17 +5,18 @@ import (
 
 	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/protobuf"
+	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"google.golang.org/protobuf/proto"
 )
 
-// EncodeClipboardData encode data for stream package | size(bytes) int 4 bytes | data type 1 byte | message n bytes |
+// EncodeClipboardData encode data for stream package `| data size (int 4 bytes) | data type (enum 1 byte) | protobuf message (struct n bytes) |`
 func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *protobuf.ClipboardData) ([]byte, error) {
 	packageData := []byte{}
 
 	// create proto clipboard data
 	clipboardDataBytes, err := proto.Marshal(clipboardData)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling clipboard data: %w", err)
+		return nil, xerror.NewRuntimeError("error marshaling clipboard data").Wrap(err)
 	}
 	dataSize := len(clipboardDataBytes)
 	dataType := DATA_TYPE_CLIPBOARD
@@ -24,7 +25,7 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 	if s.Config.EncryptEnabled {
 		clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
 		if err != nil {
-			return nil, fmt.Errorf("error to encrypt clipboard data: %w", err)
+			return nil, xerror.NewRuntimeError("error to encrypt clipboard data").Wrap(err)
 		}
 		dataSize = len(clipboardDataEncrypted)
 		clipboardDataBytes = clipboardDataEncrypted
@@ -42,14 +43,14 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 	return packageData, nil
 }
 
-// EncodeDeviceData encode data for stream package | size(bytes) int 4 bytes | data type 1 byte | message n bytes |
+// EncodeDeviceData encode data for stream package `| data size (int 4 bytes) | data type (enum 1 byte) | protobuf message (struct n bytes) |`
 func (s *StreamHandler) EncodeDeviceData(data *protobuf.DeviceData) ([]byte, error) {
 	packageData := []byte{}
 
 	// create proto device data
 	deviceDataBytes, err := proto.Marshal(data)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling device data: %w", err)
+		return nil, xerror.NewRuntimeError("error marshaling device data").Wrap(err)
 	}
 	dataSize := len(deviceDataBytes)
 

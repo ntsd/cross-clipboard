@@ -1,13 +1,13 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"os/user"
 
 	gopenpgp "github.com/ProtonMail/gopenpgp/v2/crypto"
 	p2pcrypto "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
+	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"github.com/spf13/viper"
 )
 
@@ -40,7 +40,7 @@ type Config struct {
 func LoadConfig() (Config, error) {
 	user, err := user.Current()
 	if err != nil {
-		return Config{}, fmt.Errorf("error to get user: %w", err)
+		return Config{}, xerror.NewFatalError("error to get user").Wrap(err)
 	}
 
 	viper.SetConfigName("config")
@@ -61,12 +61,12 @@ func LoadConfig() (Config, error) {
 
 	idPem, err := crypto.GenerateIDPem()
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to generate default id pem: %w", err)
+		return Config{}, xerror.NewFatalError("failed to generate default id pem").Wrap(err)
 	}
 	viper.SetDefault("id", idPem)
 	armoredPrivkey, err := crypto.GeneratePGPKey(user.Username)
 	if err != nil {
-		return Config{}, fmt.Errorf("failed to generate default pgp key: %w", err)
+		return Config{}, xerror.NewFatalError("failed to generate default pgp key").Wrap(err)
 	}
 	viper.SetDefault("private_key", armoredPrivkey)
 	viper.SetDefault("auto_trust", true)
@@ -75,14 +75,14 @@ func LoadConfig() (Config, error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			viper.SafeWriteConfig()
 		} else {
-			log.Fatal(err)
+			return Config{}, xerror.NewFatalError("failed to viper.ReadInConfig").Wrap(err)
 		}
 	}
 
 	var cfg Config
 	err = viper.Unmarshal(&cfg)
 	if err != nil {
-		log.Fatal(err)
+		return Config{}, xerror.NewFatalError("failed to viper.Unmarshal").Wrap(err)
 	}
 	log.Println("loaded config:", cfg)
 
@@ -95,14 +95,14 @@ func LoadConfig() (Config, error) {
 	// unmarshal id
 	idPK, err := crypto.UnmarshalIDPrivateKey(cfg.IDPem)
 	if err != nil {
-		return cfg, fmt.Errorf("failed to unmarshal id private key: %w", err)
+		return cfg, xerror.NewFatalError("failed to unmarshal id private key").Wrap(err)
 	}
 	cfg.ID = idPK
 
 	// unmarshal pgp private key
 	pgpPrivateKey, err := crypto.UnmarshalPGPKey(cfg.PGPPrivateKeyArmored, nil)
 	if err != nil {
-		return cfg, fmt.Errorf("failed to unmarshal gpg private key: %w", err)
+		return cfg, xerror.NewFatalError("failed to unmarshal gpg private key").Wrap(err)
 	}
 	cfg.PGPPrivateKey = pgpPrivateKey
 

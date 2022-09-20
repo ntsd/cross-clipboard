@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
 
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
+	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"github.com/ntsd/cross-clipboard/ui"
 )
 
@@ -24,8 +27,12 @@ func main() {
 			select {
 			case l := <-crossClipboard.LogChan:
 				log.Println("log: ", l)
-			case err := <-crossClipboard.ErrChan:
-				log.Println("err: ", err)
+			case err := <-crossClipboard.ErrorChan:
+				var fatalErr *xerror.FatalError
+				if errors.As(err, &fatalErr) {
+					log.Fatal(fmt.Errorf("fatal error: %w", fatalErr))
+				}
+				log.Println(fmt.Errorf("runtime error: %w", err))
 			case cb := <-crossClipboard.ClipboardManager.ClipboardsChannel:
 				_ = cb
 			case dv := <-crossClipboard.DeviceManager.DevicesChannel:

@@ -2,12 +2,12 @@ package device
 
 import (
 	"bufio"
-	"fmt"
 
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/protobuf"
+	"github.com/ntsd/cross-clipboard/pkg/xerror"
 )
 
 // Device struct for peer
@@ -23,8 +23,8 @@ type Device struct {
 	Writer *bufio.Writer
 	Reader *bufio.Reader
 
-	LogChan chan string
-	ErrChan chan error
+	LogChan   chan string
+	ErrorChan chan error
 
 	PgpEncrypter *crypto.PGPEncrypter
 }
@@ -55,11 +55,11 @@ func (dv *Device) UpdateFromProtobuf(deviceData *protobuf.DeviceData) error {
 
 	publicKey, err := crypto.ByteToPGPKey(deviceData.PublicKey)
 	if err != nil {
-		return fmt.Errorf("error to create pgp public key: %w", err)
+		return xerror.NewRuntimeError("error to create pgp public key").Wrap(err)
 	}
 	pgpEncrypter, err := crypto.NewPGPEncrypter(publicKey)
 	if err != nil {
-		return fmt.Errorf("error to create pgp encrypter: %w", err)
+		return xerror.NewRuntimeError("error to create pgp encrypter").Wrap(err)
 	}
 	dv.PgpEncrypter = pgpEncrypter
 

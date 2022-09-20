@@ -7,6 +7,7 @@ import (
 
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/device"
+	"github.com/ntsd/cross-clipboard/pkg/xerror"
 )
 
 // CreateWriteData handle clipboad channel and write to all peers and host
@@ -21,7 +22,7 @@ loop:
 			}
 			err := s.sendClipboard(textBytes, false)
 			if err != nil {
-				s.ErrorChan <- fmt.Errorf("error sending text clipboard data: %w", err)
+				s.ErrorChan <- xerror.NewRuntimeError("error sending text clipboard data").Wrap(err)
 				break loop
 			}
 		case imageBytes, ok := <-s.ClipboardManager.ReadImageChannel:
@@ -30,7 +31,7 @@ loop:
 			}
 			err := s.sendClipboard(imageBytes, true)
 			if err != nil {
-				s.ErrorChan <- fmt.Errorf("error sending image clipboard data: %w", err)
+				s.ErrorChan <- xerror.NewRuntimeError("error sending image clipboard data").Wrap(err)
 				break loop
 			}
 		}
@@ -63,12 +64,12 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 	// send data to each devices
 	for name, dv := range s.DeviceManager.Devices {
 		if dv.Status != device.StatusConnected {
-			s.ErrorChan <- fmt.Errorf("device %s status is not connected", name)
+			s.ErrorChan <- xerror.NewRuntimeErrorf("device %s status is not connected", name)
 			continue
 		}
 
 		if dv.PgpEncrypter == nil {
-			s.ErrorChan <- fmt.Errorf("not found pgp encrypter for device %s", name)
+			s.ErrorChan <- xerror.NewRuntimeErrorf("not found pgp encrypter for device %s", name)
 			dv.Status = device.StatusError
 			// todo request for public key
 			continue
@@ -78,7 +79,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 
 		clipboardDataBytes, err := s.EncodeClipboardData(dv, clipboardData)
 		if err != nil {
-			s.ErrorChan <- fmt.Errorf("error encoding data: %w", err)
+			s.ErrorChan <- xerror.NewRuntimeError("error encoding data").Wrap(err)
 			dv.Status = device.StatusError
 			continue
 		}
@@ -97,13 +98,13 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 func (s *StreamHandler) WriteData(w *bufio.Writer, data []byte) error {
 	_, err := w.Write(data)
 	if err != nil {
-		s.ErrorChan <- fmt.Errorf("error writing to buffer: %w", err)
+		s.ErrorChan <- xerror.NewRuntimeError("error writing to buffer").Wrap(err)
 		return err
 	}
 
 	err = w.Flush()
 	if err != nil {
-		s.ErrorChan <- fmt.Errorf("error flushing buffer: %w", err)
+		s.ErrorChan <- xerror.NewRuntimeError("error flushing buffer").Wrap(err)
 		return err
 	}
 	return nil
