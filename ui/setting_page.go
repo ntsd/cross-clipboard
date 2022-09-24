@@ -34,9 +34,15 @@ func (v *View) newSettingPage() *Page {
 		AddInputField("port", strconv.Itoa(v.CrossClipboard.Config.ListenPort), 5, numberValidator, nil).
 
 		// submit
-		AddButton("save", nil).
-		AddButton("cancel", nil).
-		AddButton("default", nil)
+		AddButton("save", func() {
+			// TODO
+		}).
+		AddButton("cancel", func() {
+			// TODO
+		}).
+		AddButton("default", func() {
+			// TODO
+		})
 
 	form.SetBorder(true).SetTitle("setting").SetTitleAlign(tview.AlignCenter)
 

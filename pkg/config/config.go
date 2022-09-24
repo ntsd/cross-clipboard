@@ -37,6 +37,15 @@ type Config struct {
 	AutoTrust            bool              `mapstructure:"auto_trust"`  // auto trust device
 }
 
+// Save save config to file
+func (c Config) Save() error {
+	err := viper.WriteConfig()
+	if err != nil {
+		return xerror.NewRuntimeError("failed to viper.WriteConfig").Wrap(err)
+	}
+	return nil
+}
+
 func LoadConfig() (Config, error) {
 	user, err := user.Current()
 	if err != nil {
@@ -87,7 +96,10 @@ func LoadConfig() (Config, error) {
 	log.Println("loaded config:", cfg)
 
 	// save config after load default
-	viper.WriteConfig()
+	err = viper.WriteConfig()
+	if err != nil {
+		return Config{}, xerror.NewFatalError("failed to viper.WriteConfig").Wrap(err)
+	}
 
 	// set home username
 	cfg.Username = user.Username
