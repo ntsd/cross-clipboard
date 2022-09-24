@@ -15,7 +15,6 @@ import (
 type Config struct {
 	// Network Config
 	GroupName  string `mapstructure:"group_name"`
-	ProtocolID string `mapstructure:"protocal_id"`
 	ListenHost string `mapstructure:"listen_host"`
 	ListenPort int    `mapstructure:"listen_port"`
 
@@ -57,7 +56,6 @@ func LoadConfig() (Config, error) {
 	viper.AddConfigPath(".")
 
 	viper.SetDefault("group_name", "default")
-	viper.SetDefault("protocal_id", "/cross-clipboard/0.0.1")
 	viper.SetDefault("listen_host", "0.0.0.0")
 	viper.SetDefault("listen_port", 4001)
 

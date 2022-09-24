@@ -6,7 +6,6 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/protocol"
 	"github.com/multiformats/go-multiaddr"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/config"
@@ -76,7 +75,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 
 		// Set a function as stream handler.
 		// This function is called when a peer initiates a connection and starts a stream with this peer.
-		cc.Host.SetStreamHandler(protocol.ID(cc.Config.ProtocolID), streamHandler.HandleStream)
+		cc.Host.SetStreamHandler(stream.PROTOCAL_ID, streamHandler.HandleStream)
 		cc.LogChan <- fmt.Sprintf("[*] your multiaddress is: /ip4/%s/tcp/%v/p2p/%s", cc.Config.ListenHost, cc.Config.ListenPort, host.ID().Pretty())
 
 		peerInfoChan, err := discovery.InitMultiMDNS(cc.Host, cc.Config.GroupName, cc.LogChan)
@@ -93,7 +92,7 @@ func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
 			}
 
 			// open a stream, this stream will be handled by handleStream other end
-			stream, err := cc.Host.NewStream(ctx, peerInfo.ID, protocol.ID(cc.Config.ProtocolID))
+			stream, err := cc.Host.NewStream(ctx, peerInfo.ID, stream.PROTOCAL_ID)
 			if err != nil {
 				cc.ErrorChan <- xerror.NewRuntimeError("new stream error").Wrap(err)
 				continue

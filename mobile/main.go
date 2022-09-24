@@ -39,7 +39,6 @@ type CrossClipbardMobile struct {
 func (c *CrossClipbardMobile) Start() {
 	cfg := config.Config{
 		GroupName:  "default",
-		ProtocolID: "/cross-clipboard/0.0.1",
 		ListenHost: "0.0.0.0",
 		ListenPort: 4001,
 	}

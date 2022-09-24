@@ -30,7 +30,7 @@ func (v *View) newSettingPage() *Page {
 
 		// network
 		AddInputField("groupname", v.CrossClipboard.Config.GroupName, 50, nil, nil).
-		AddInputField("protocal id", v.CrossClipboard.Config.ProtocolID, 50, nil, nil).
+		AddInputField("host", v.CrossClipboard.Config.ListenHost, 5, numberValidator, nil).
 		AddInputField("port", strconv.Itoa(v.CrossClipboard.Config.ListenPort), 5, numberValidator, nil).
 
 		// submit
