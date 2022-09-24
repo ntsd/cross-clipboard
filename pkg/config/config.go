@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os/user"
 
@@ -8,6 +9,7 @@ import (
 	p2pcrypto "github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
+	"github.com/ntsd/go-utils/pkg/maputil"
 	"github.com/spf13/viper"
 )
 
@@ -37,18 +39,31 @@ type Config struct {
 }
 
 // Save save config to file
-func (c Config) Save() error {
-	err := viper.WriteConfig()
+func (c *Config) Save() error {
+
+	// set viper value from struct
+	m, err := maputil.ToMapString(c, "mapstructure")
 	if err != nil {
-		return xerror.NewRuntimeError("failed to viper.WriteConfig").Wrap(err)
+		return xerror.NewRuntimeError("can not convert config to map").Wrap(err)
+	}
+	for k, v := range m {
+		viper.Set(k, v)
+	}
+
+	err = viper.WriteConfig()
+	if err != nil {
+		return xerror.NewRuntimeError(fmt.Sprintf(
+			"failed to write config at path %s",
+			viper.ConfigFileUsed(),
+		)).Wrap(err)
 	}
 	return nil
 }
 
-func LoadConfig() (Config, error) {
+func LoadConfig() (*Config, error) {
 	user, err := user.Current()
 	if err != nil {
-		return Config{}, xerror.NewFatalError("error to get user").Wrap(err)
+		return nil, xerror.NewFatalError("error to get user").Wrap(err)
 	}
 
 	viper.SetConfigName("config")
@@ -68,12 +83,12 @@ func LoadConfig() (Config, error) {
 
 	idPem, err := crypto.GenerateIDPem()
 	if err != nil {
-		return Config{}, xerror.NewFatalError("failed to generate default id pem").Wrap(err)
+		return nil, xerror.NewFatalError("failed to generate default id pem").Wrap(err)
 	}
 	viper.SetDefault("id", idPem)
 	armoredPrivkey, err := crypto.GeneratePGPKey(user.Username)
 	if err != nil {
-		return Config{}, xerror.NewFatalError("failed to generate default pgp key").Wrap(err)
+		return nil, xerror.NewFatalError("failed to generate default pgp key").Wrap(err)
 	}
 	viper.SetDefault("private_key", armoredPrivkey)
 	viper.SetDefault("auto_trust", true)
@@ -82,21 +97,21 @@ func LoadConfig() (Config, error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			viper.SafeWriteConfig()
 		} else {
-			return Config{}, xerror.NewFatalError("failed to viper.ReadInConfig").Wrap(err)
+			return nil, xerror.NewFatalError("failed to viper.ReadInConfig").Wrap(err)
 		}
 	}
 
-	var cfg Config
-	err = viper.Unmarshal(&cfg)
+	cfg := &Config{}
+	err = viper.Unmarshal(cfg)
 	if err != nil {
-		return Config{}, xerror.NewFatalError("failed to viper.Unmarshal").Wrap(err)
+		return nil, xerror.NewFatalError("failed to viper.Unmarshal").Wrap(err)
 	}
 	log.Println("loaded config:", cfg)
 
 	// save config after load default
 	err = viper.WriteConfig()
 	if err != nil {
-		return Config{}, xerror.NewFatalError("failed to viper.WriteConfig").Wrap(err)
+		return nil, xerror.NewFatalError("failed to viper.WriteConfig").Wrap(err)
 	}
 
 	// set home username

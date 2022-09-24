@@ -37,7 +37,7 @@ type CrossClipbardMobile struct {
 }
 
 func (c *CrossClipbardMobile) Start() {
-	cfg := config.Config{
+	cfg := &config.Config{
 		GroupName:  "default",
 		ListenHost: "0.0.0.0",
 		ListenPort: 4001,

@@ -11,7 +11,7 @@ import (
 
 // ClipboardManager struct for clipbaord manager
 type ClipboardManager struct {
-	Config            config.Config
+	Config            *config.Config
 	ReadTextChannel   <-chan []byte
 	ReadImageChannel  <-chan []byte
 	Clipboards        []Clipboard
@@ -21,7 +21,7 @@ type ClipboardManager struct {
 }
 
 // NewClipboardManager create new clipbaord manager
-func NewClipboardManager(cfg config.Config) *ClipboardManager {
+func NewClipboardManager(cfg *config.Config) *ClipboardManager {
 	err := clipboard.Init()
 	if err != nil {
 		panic(err)

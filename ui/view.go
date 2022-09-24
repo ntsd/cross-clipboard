@@ -53,19 +53,16 @@ func (v *View) Start() {
 		AddItem(v.basePages, 0, 1, true).
 		AddItem(v.menuBar, 1, 1, false)
 
-	// Create pages
+	// Add pages and menu bar
 	for index, page := range v.pages {
 		v.basePages.AddPage(strconv.Itoa(index), page.Content, true, index == 0)
 		fmt.Fprintf(v.menuBar, `%d ["%d"][darkcyan]%s[white][""]  `, index+1, index, page.Title)
 	}
 	v.menuBar.Highlight("0")
 
+	// handle shortcuts key
 	v.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		// check form text input to avoid menu changing
-		focusFormIdx, _ := v.pages[1].Content.(*tview.Form).GetFocusedItemIndex()
-		if contains([]int{1, 2, 5, 6, 7}, focusFormIdx) {
-			return event
-		}
+		// TODO prevent form type to not change the page
 
 		if unicode.IsDigit(event.Rune()) {
 			pageNum := int(event.Rune() - '1')

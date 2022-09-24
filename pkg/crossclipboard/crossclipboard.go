@@ -20,7 +20,7 @@ import (
 // CrossClipboard cross clipbaord struct
 type CrossClipboard struct {
 	Host   host.Host
-	Config config.Config
+	Config *config.Config
 
 	ClipboardManager *clipboard.ClipboardManager
 	DeviceManager    *devicemanager.DeviceManager
@@ -30,7 +30,7 @@ type CrossClipboard struct {
 }
 
 // NewCrossClipboard initial cross clipbaord
-func NewCrossClipboard(cfg config.Config) (*CrossClipboard, error) {
+func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 	cc := &CrossClipboard{
 		Config:    cfg,
 		LogChan:   make(chan string),

@@ -16,7 +16,7 @@ import (
 
 // StreamHandler struct for stream handler
 type StreamHandler struct {
-	Config           config.Config
+	Config           *config.Config
 	ClipboardManager *clipboard.ClipboardManager
 	DeviceManager    *devicemanager.DeviceManager
 	LogChan          chan string
@@ -27,7 +27,7 @@ type StreamHandler struct {
 
 // NewStreamHandler initial new stream handler
 func NewStreamHandler(
-	cfg config.Config,
+	cfg *config.Config,
 	cp *clipboard.ClipboardManager,
 	deviceManager *devicemanager.DeviceManager,
 	logChan chan string,

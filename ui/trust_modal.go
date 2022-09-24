@@ -26,7 +26,7 @@ func (v *View) newTrustModal(dv *device.Device) {
 
 			v.CrossClipboard.DeviceManager.UpdateDevice(dv)
 
-			// go back to layout after submit
+			// set root back to layout after submitted
 			v.app.SetRoot(v.layout, true).SetFocus(v.layout)
 		})
 

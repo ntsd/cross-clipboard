@@ -40,7 +40,7 @@ func (v *View) newDevicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive 
 
 				textColor, ok := deviceStatusTextColorMap[dv.Status]
 				if !ok {
-					textColor = tcell.ColorBlack
+					textColor = tcell.ColorDefault
 				}
 
 				name := dv.Name

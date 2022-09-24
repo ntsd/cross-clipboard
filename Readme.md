@@ -13,6 +13,7 @@ A multi device clipboard sharing over p2p in lan network.
 - Avoid sending data back to the peer it received from
 - Mobile Support
 - Add private key pass phrase
+- Unit tests
 
 ## Technology
 
