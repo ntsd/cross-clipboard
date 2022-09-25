@@ -18,7 +18,7 @@ func (v *View) pageInputCapture(event *tcell.EventKey) *tcell.EventKey {
 
 	if unicode.IsDigit(event.Rune()) {
 		pageNum := int(event.Rune() - '1')
-		if pageNum < len(v.pages) {
+		if pageNum < len(v.pages) && pageNum >= 0 {
 			v.goToPage(pageNum)
 		}
 	}

@@ -10,14 +10,24 @@ import (
 	"github.com/rivo/tview"
 )
 
-func numberValidator(text string, lastChar rune) bool {
-	if !unicode.IsDigit(lastChar) {
-		return false
+func numberValidator(maxLen int) func(text string, lastChar rune) bool {
+	return func(text string, lastChar rune) bool {
+		// Note this function will not if it's remove character by back space
+		l := len(text)
+		if l <= 0 || l >= maxLen {
+			return false
+		}
+		if !unicode.IsDigit(lastChar) {
+			return false
+		}
+		return true
 	}
-	return true
 }
 
 func unsafeStringToInt(text string) int {
+	if text == "" {
+		return 0
+	}
 	n, err := strconv.Atoi(text)
 	if err != nil {
 		log.Fatal(err)
@@ -68,7 +78,7 @@ func (v *View) newSettingPage() *Page {
 		SetLabel("max size (MB)").
 		SetText(strconv.Itoa(v.CrossClipboard.Config.MaxSize)).
 		SetFieldWidth(5).
-		SetAcceptanceFunc(numberValidator).
+		SetAcceptanceFunc(numberValidator(3)).
 		SetChangedFunc(func(text string) {
 			cfg.MaxSize = unsafeStringToInt(text)
 			save(nil)
@@ -78,7 +88,7 @@ func (v *View) newSettingPage() *Page {
 		SetLabel("max history").
 		SetText(strconv.Itoa(v.CrossClipboard.Config.MaxHistory)).
 		SetFieldWidth(5).
-		SetAcceptanceFunc(numberValidator).
+		SetAcceptanceFunc(numberValidator(3)).
 		SetChangedFunc(func(text string) {
 			cfg.MaxHistory = unsafeStringToInt(text)
 			save(nil)
@@ -93,7 +103,7 @@ func (v *View) newSettingPage() *Page {
 		}))
 
 	formItems = append(formItems, tview.NewCheckbox().
-		SetLabel("e2e encrypt").
+		SetLabel("encrypt message").
 		SetChecked(v.CrossClipboard.Config.EncryptEnabled).
 		SetChangedFunc(func(checked bool) {
 			cfg.EncryptEnabled = checked
@@ -137,7 +147,7 @@ func (v *View) newSettingPage() *Page {
 		SetLabel("port").
 		SetText(strconv.Itoa(v.CrossClipboard.Config.ListenPort)).
 		SetFieldWidth(5).
-		SetAcceptanceFunc(numberValidator).
+		SetAcceptanceFunc(numberValidator(5)).
 		SetChangedFunc(func(text string) {
 			cfg.ListenPort = unsafeStringToInt(text)
 		}))

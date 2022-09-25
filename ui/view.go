@@ -65,7 +65,6 @@ func (v *View) Start() {
 
 	// handle shortcuts key
 	v.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-
 		return v.pageInputCapture(event)
 	})
 
