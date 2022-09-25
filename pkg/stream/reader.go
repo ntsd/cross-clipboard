@@ -30,6 +30,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 	if err != nil {
 		s.ErrorChan <- xerror.NewRuntimeErrorf("cannot send device data to %s", dv.AddressInfo.ID.Pretty()).Wrap(err)
 		dv.Status = device.StatusError
+		s.DeviceManager.UpdateDevice(dv)
 		return
 	}
 
@@ -39,12 +40,14 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		if err != nil {
 			s.ErrorChan <- xerror.NewRuntimeError("error reading data size").Wrap(err)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 			break
 		}
 
 		if dataSize <= 0 {
 			s.ErrorChan <- xerror.NewRuntimeErrorf("data size < 0: %d", dataSize)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 			break
 		}
 
@@ -55,11 +58,13 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		if err != nil {
 			s.ErrorChan <- xerror.NewRuntimeError("error reading from buffer").Wrap(err)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 			break
 		}
 		if readBytes != dataSize {
 			s.ErrorChan <- xerror.NewRuntimeErrorf("not reading full bytes read: %d size: %d", readBytes, dataSize)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 			break
 		}
 		s.LogChan <- fmt.Sprintf("read data size %d", readBytes)
@@ -68,6 +73,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		if err != nil {
 			s.ErrorChan <- xerror.NewRuntimeError("error decoding data").Wrap(err)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 			break
 		}
 

@@ -71,6 +71,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 		if dv.PgpEncrypter == nil {
 			s.ErrorChan <- xerror.NewRuntimeErrorf("not found pgp encrypter for device %s", name)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 			// todo request for public key
 			continue
 		}
@@ -81,6 +82,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 		if err != nil {
 			s.ErrorChan <- xerror.NewRuntimeError("error encoding data").Wrap(err)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 			continue
 		}
 
@@ -88,6 +90,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 		if err != nil {
 			s.LogChan <- fmt.Sprintf("error to send data for peer: %s", name)
 			dv.Status = device.StatusError
+			s.DeviceManager.UpdateDevice(dv)
 		}
 	}
 
