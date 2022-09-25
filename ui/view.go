@@ -1,20 +1,23 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"strconv"
-	"unicode"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
+	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"github.com/rivo/tview"
 )
 
 type View struct {
 	CrossClipboard *crossclipboard.CrossClipboard
 	app            *tview.Application
-	layout         *tview.Flex
 
+	layout    *tview.Flex
 	menuBar   *tview.TextView
 	basePages *tview.Pages
 	pages     []*Page
@@ -62,15 +65,8 @@ func (v *View) Start() {
 
 	// handle shortcuts key
 	v.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		// TODO prevent form type to not change the page
 
-		if unicode.IsDigit(event.Rune()) {
-			pageNum := int(event.Rune() - '1')
-			if pageNum < len(v.pages) {
-				v.goToPage(pageNum)
-			}
-		}
-		return event
+		return v.pageInputCapture(event)
 	})
 
 	if err := v.app.
@@ -82,24 +78,43 @@ func (v *View) Start() {
 }
 
 func (v *View) Stop() {
+	v.CrossClipboard.Stop()
 	v.app.Stop()
+	v = nil
 }
 
-func (v *View) goToPage(pageNum int) {
-	v.menuBar.Highlight(strconv.Itoa(pageNum)).
-		ScrollToHighlight()
-}
+func (v *View) restart() {
+	v.Stop()
 
-func (v *View) previousPage() {
-	page, _ := strconv.Atoi(v.menuBar.GetHighlights()[0])
-	page = (page - 1 + len(v.pages)) % len(v.pages)
-	v.menuBar.Highlight(strconv.Itoa(page)).
-		ScrollToHighlight()
-}
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-func (v *View) nextPage() {
-	currentPage, _ := strconv.Atoi(v.menuBar.GetHighlights()[0])
-	newPage := (currentPage + 1) % len(v.pages)
-	v.menuBar.Highlight(strconv.Itoa(newPage)).
-		ScrollToHighlight()
+	crossClipboard, err := crossclipboard.NewCrossClipboard(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if cfg.TerminalMode {
+		for {
+			select {
+			case l := <-crossClipboard.LogChan:
+				log.Println("log: ", l)
+			case err := <-crossClipboard.ErrorChan:
+				var fatalErr *xerror.FatalError
+				if errors.As(err, &fatalErr) {
+					log.Fatal(fmt.Errorf("fatal error: %w", fatalErr))
+				}
+				log.Println(fmt.Errorf("runtime error: %w", err))
+			case cb := <-crossClipboard.ClipboardManager.ClipboardsChannel:
+				_ = cb
+			case dv := <-crossClipboard.DeviceManager.DevicesChannel:
+				_ = dv
+			}
+		}
+	} else {
+		v = NewView(crossClipboard)
+		v.Start()
+	}
 }

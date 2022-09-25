@@ -1,8 +1,8 @@
 package ui
 
-func limitTextLength(text string, length int) string {
-	if len(text) > length {
-		return text[:length]
+func limitStringLength(text string, limit int) string {
+	if len(text) > limit {
+		return text[:limit]
 	}
 	return text
 }

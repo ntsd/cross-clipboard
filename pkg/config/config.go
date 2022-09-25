@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os/user"
 
 	gopenpgp "github.com/ProtonMail/gopenpgp/v2/crypto"
@@ -22,8 +21,8 @@ type Config struct {
 
 	// Clipbaord Config
 	EncryptEnabled bool `mapstructure:"encrypt_enabled"` // encryption clipbaord enabled
-	MaxSize        int  `mapstructure:"max_size"`        // max size to send clipboard
-	MaxHistory     int  `mapstructure:"max_history"`     // max number of history clipboard
+	MaxSize        int  `mapstructure:"max_size"`        // limit clipboard size to send
+	MaxHistory     int  `mapstructure:"max_history"`     // limit number of clipboard history
 
 	// UI Config
 	TerminalMode bool `mapstructure:"terminal_mode"` // is terminal mode or ui mode
@@ -47,6 +46,9 @@ func (c *Config) Save() error {
 		return xerror.NewRuntimeError("can not convert config to map").Wrap(err)
 	}
 	for k, v := range m {
+		if k == "-" {
+			continue
+		}
 		viper.Set(k, v)
 	}
 
@@ -58,6 +60,20 @@ func (c *Config) Save() error {
 		)).Wrap(err)
 	}
 	return nil
+}
+
+// Save save config to file
+func (c *Config) ResetToDefault() error {
+	// TODO fix this
+
+	newCfg := &Config{}
+
+	err := viper.Unmarshal(newCfg)
+	if err != nil {
+		return xerror.NewFatalError("failed to viper.Unmarshal").Wrap(err)
+	}
+
+	return newCfg.Save()
 }
 
 func LoadConfig() (*Config, error) {
@@ -75,7 +91,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("listen_port", 4001)
 
 	viper.SetDefault("encrypt_enabled", true)
-	viper.SetDefault("max_size", 1<<24) // 16MB
+	viper.SetDefault("max_size", 16)
 	viper.SetDefault("max_history", 10)
 
 	viper.SetDefault("terminal_mode", false)
@@ -106,7 +122,6 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, xerror.NewFatalError("failed to viper.Unmarshal").Wrap(err)
 	}
-	log.Println("loaded config:", cfg)
 
 	// save config after load default
 	err = viper.WriteConfig()

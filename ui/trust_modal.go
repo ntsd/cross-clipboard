@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	trustLabel = "Trust"
-	blockLabel = "Block"
+	trustLabel = "trust"
+	blockLabel = "block"
 )
 
 func (v *View) newTrustModal(dv *device.Device) {

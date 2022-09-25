@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
 	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/rivo/tview"
 )
@@ -18,9 +17,11 @@ var deviceStatusTextColorMap = map[device.DeviceStatus]tcell.Color{
 	device.StatusBlocked:      tcell.ColorRed,
 }
 
-func (v *View) newDevicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive {
+func (v *View) newDevicesBox() tview.Primitive {
 	table := tview.NewTable().
 		SetFixed(1, 1)
+
+	cc := v.CrossClipboard
 
 	go func() {
 		for devices := range cc.DeviceManager.DevicesChannel {
@@ -47,7 +48,7 @@ func (v *View) newDevicesBox(cc *crossclipboard.CrossClipboard) tview.Primitive 
 				if name == "" {
 					name = id
 				}
-				table.SetCell(row, 0, tview.NewTableCell(limitTextLength(name, 10)))
+				table.SetCell(row, 0, tview.NewTableCell(limitStringLength(name, 10)))
 				table.SetCell(row, 1, tview.NewTableCell(dv.Status.ToString()).SetTextColor(textColor))
 				table.SetCell(row, 2, tview.NewTableCell(dv.OS))
 

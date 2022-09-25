@@ -108,3 +108,9 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 
 	return cc, nil
 }
+
+func (cc *CrossClipboard) Stop() error {
+	// TODO graceful exit
+	cc = nil
+	return nil
+}
