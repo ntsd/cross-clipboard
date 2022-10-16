@@ -2,3 +2,4 @@
 *.exe
 .vscode
 config.yaml
+devices.json

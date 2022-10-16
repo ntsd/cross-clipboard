@@ -12,21 +12,18 @@ import (
 
 // Device struct for peer
 type Device struct {
-	AddressInfo peer.AddrInfo
+	AddressInfo peer.AddrInfo `json:"-"`
 
-	OS        string
-	Name      string
-	PublicKey []byte
-	Status    DeviceStatus
+	OS        string       `json:"os"`
+	Name      string       `json:"name"`
+	PublicKey []byte       `json:"publicKey"`
+	Status    DeviceStatus `json:"status"`
 
-	Stream network.Stream
-	Writer *bufio.Writer
-	Reader *bufio.Reader
+	Stream network.Stream `json:"-"`
+	Writer *bufio.Writer  `json:"-"`
+	Reader *bufio.Reader  `json:"-"`
 
-	LogChan   chan string
-	ErrorChan chan error
-
-	PgpEncrypter *crypto.PGPEncrypter
+	PgpEncrypter *crypto.PGPEncrypter `json:"-"`
 }
 
 // NewDevice initial new peer
@@ -47,13 +44,22 @@ func (dv *Device) Trust() {
 	dv.Status = StatusConnected
 }
 
+// Block block this device
+func (dv *Device) Block() {
+	dv.Status = StatusBlocked
+}
+
 // UpdateFromProtobuf update device from protobuf device data
 func (dv *Device) UpdateFromProtobuf(deviceData *protobuf.DeviceData) error {
 	dv.Name = deviceData.Name
 	dv.OS = deviceData.Os
 	dv.PublicKey = deviceData.PublicKey
 
-	publicKey, err := crypto.ByteToPGPKey(deviceData.PublicKey)
+	return dv.CreatePGPEncrypter()
+}
+
+func (dv *Device) CreatePGPEncrypter() error {
+	publicKey, err := crypto.ByteToPGPKey(dv.PublicKey)
 	if err != nil {
 		return xerror.NewRuntimeError("error to create pgp public key").Wrap(err)
 	}

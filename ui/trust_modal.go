@@ -19,9 +19,9 @@ func (v *View) newTrustModal(dv *device.Device) {
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
 			switch buttonLabel {
 			case trustLabel:
-				dv.Status = device.StatusConnected
+				dv.Trust()
 			case blockLabel:
-				dv.Status = device.StatusBlocked
+				dv.Block()
 			}
 
 			v.CrossClipboard.DeviceManager.UpdateDevice(dv)

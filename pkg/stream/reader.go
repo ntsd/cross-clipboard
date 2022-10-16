@@ -90,7 +90,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 			dv.Status = device.StatusPending
 
 			if s.Config.AutoTrust {
-				dv.Status = device.StatusConnected
+				dv.Trust()
 				s.LogChan <- fmt.Sprintf("trusted %s by auto trust", deviceData.Name)
 			}
 

@@ -1,38 +1,17 @@
 package device
 
 // DeviceStatus device status
-type DeviceStatus int
+type DeviceStatus string
 
 const (
-	// StatusUnknown unknown device status
-	StatusUnknown DeviceStatus = iota
 	// StatusPending the device waiting to handshake and trust the device, they send you the public key but you didn't
-	StatusPending
+	StatusPending DeviceStatus = "pending"
 	// StatusConnected the device is trusted and connected
-	StatusConnected
+	StatusConnected DeviceStatus = "connected"
 	// StatusDisconnected the device is trusted but disconnected or offline
-	StatusDisconnected
+	StatusDisconnected DeviceStatus = "disconnected"
 	// StatusError found a error in the device should disconnect and reconnect
-	StatusError
+	StatusError DeviceStatus = "error"
 	// StatusBlocked the device is blocked by the user
-	StatusBlocked
+	StatusBlocked DeviceStatus = "blocked"
 )
-
-func (ds DeviceStatus) ToString() string {
-	switch ds {
-	case StatusUnknown:
-		return "unknown"
-	case StatusPending:
-		return "pending"
-	case StatusConnected:
-		return "connected"
-	case StatusDisconnected:
-		return "disconnected"
-	case StatusError:
-		return "error"
-	case StatusBlocked:
-		return "blocked"
-	default:
-		return "unknown"
-	}
-}

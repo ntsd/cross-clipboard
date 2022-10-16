@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gdamore/tcell/v2"
+	"github.com/ntsd/go-utils/pkg/stringutil"
 	"github.com/rivo/tview"
 )
 
@@ -34,7 +35,7 @@ func (v *View) newClipboardBox() tview.Primitive {
 				} else {
 					table.SetCell(row, 2, tview.NewTableCell("text"))
 					if !hiddenText {
-						table.SetCell(row, 3, tview.NewTableCell(limitStringLength(string(clipboard.Data), 10)))
+						table.SetCell(row, 3, tview.NewTableCell(stringutil.LimitStringLen(string(clipboard.Data), 10)))
 					}
 				}
 			}

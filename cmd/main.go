@@ -7,6 +7,7 @@ import (
 
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
+	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"github.com/ntsd/cross-clipboard/ui"
 )
@@ -33,10 +34,22 @@ func main() {
 					log.Fatal(fmt.Errorf("fatal error: %w", fatalErr))
 				}
 				log.Println(fmt.Errorf("runtime error: %w", err))
-			case cb := <-crossClipboard.ClipboardManager.ClipboardsChannel:
-				_ = cb
-			case dv := <-crossClipboard.DeviceManager.DevicesChannel:
-				_ = dv
+			case clipboards := <-crossClipboard.ClipboardManager.ClipboardsChannel:
+				_ = clipboards
+			case devices := <-crossClipboard.DeviceManager.DevicesChannel:
+				for _, dv := range devices {
+					if dv.Status == device.StatusPending {
+						fmt.Printf("device %s wanted to connect (Y/n)", dv.Name)
+						var input string
+						fmt.Scanln(&input)
+						if input == "n" {
+							dv.Block()
+						} else {
+							dv.Trust()
+						}
+					}
+					crossClipboard.DeviceManager.UpdateDevice(dv)
+				}
 			}
 		}
 	} else {

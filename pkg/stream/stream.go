@@ -55,6 +55,7 @@ func (s *StreamHandler) HandleStream(stream network.Stream) {
 		ID:    stream.Conn().RemotePeer(),
 		Addrs: []multiaddr.Multiaddr{stream.Conn().RemoteMultiaddr()},
 	}, stream)
+
 	s.DeviceManager.AddDevice(dv)
 	dv.Reader = bufio.NewReader(stream)
 	dv.Writer = bufio.NewWriter(stream)

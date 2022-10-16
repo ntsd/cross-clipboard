@@ -677,6 +677,8 @@ github.com/ntsd/go-utils v0.0.0-20220920194513-342f0eba1cc0 h1:vKbMSFypAeh1vB8D2
 github.com/ntsd/go-utils v0.0.0-20220920194513-342f0eba1cc0/go.mod h1:g/M9z+Rnrw/EGcP9Olhq4SzZiW7l9fcpf1v8Ct9WYkI=
 github.com/ntsd/go-utils v0.0.0-20220924040234-865004a0712a h1:qOGmemTCJ4NrALh3dHV+294HAWKfRH8MCf736zAqxVQ=
 github.com/ntsd/go-utils v0.0.0-20220924040234-865004a0712a/go.mod h1:g/M9z+Rnrw/EGcP9Olhq4SzZiW7l9fcpf1v8Ct9WYkI=
+github.com/ntsd/go-utils v0.0.0-20221002000426-fd4acd2afaa5 h1:WdHDcOwEDlVodshe2ytwCr25HSmt/eG/9I08OVB+Zpc=
+github.com/ntsd/go-utils v0.0.0-20221002000426-fd4acd2afaa5/go.mod h1:g/M9z+Rnrw/EGcP9Olhq4SzZiW7l9fcpf1v8Ct9WYkI=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=

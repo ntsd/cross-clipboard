@@ -5,11 +5,11 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/ntsd/cross-clipboard/pkg/device"
+	"github.com/ntsd/go-utils/pkg/stringutil"
 	"github.com/rivo/tview"
 )
 
 var deviceStatusTextColorMap = map[device.DeviceStatus]tcell.Color{
-	device.StatusUnknown:      tcell.ColorGray,
 	device.StatusPending:      tcell.ColorYellow,
 	device.StatusConnected:    tcell.ColorGreen,
 	device.StatusDisconnected: tcell.ColorGray,
@@ -48,8 +48,8 @@ func (v *View) newDevicesBox() tview.Primitive {
 				if name == "" {
 					name = id
 				}
-				table.SetCell(row, 0, tview.NewTableCell(limitStringLength(name, 10)))
-				table.SetCell(row, 1, tview.NewTableCell(dv.Status.ToString()).SetTextColor(textColor))
+				table.SetCell(row, 0, tview.NewTableCell(stringutil.LimitStringLen(name, 10)))
+				table.SetCell(row, 1, tview.NewTableCell(string(dv.Status)).SetTextColor(textColor))
 				table.SetCell(row, 2, tview.NewTableCell(dv.OS))
 
 				// because multiaddr sometimes include 127.0.0.1

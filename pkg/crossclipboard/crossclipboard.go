@@ -1,6 +1,7 @@
 package crossclipboard
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 
@@ -64,6 +65,11 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 	}
 
 	go func() {
+		err := cc.DeviceManager.Load()
+		if err != nil {
+			cc.ErrorChan <- xerror.NewFatalError("can not load device from setting").Wrap(err)
+		}
+
 		streamHandler := stream.NewStreamHandler(
 			cc.Config,
 			cc.ClipboardManager,
@@ -72,8 +78,6 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 			cc.ErrorChan,
 			pgpDecrypter,
 		)
-
-		// Set a function as stream handler.
 		// This function is called when a peer initiates a connection and starts a stream with this peer.
 		cc.Host.SetStreamHandler(stream.PROTOCAL_ID, streamHandler.HandleStream)
 		cc.LogChan <- fmt.Sprintf("[*] your multiaddress is: /ip4/%s/tcp/%v/p2p/%s", cc.Config.ListenHost, cc.Config.ListenPort, host.ID().Pretty())
@@ -84,6 +88,12 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 		}
 
 		for peerInfo := range peerInfoChan { // when discover a peer
+			dv := cc.DeviceManager.GetDevice(peerInfo.ID.Pretty())
+			if dv != nil && dv.Status == device.StatusBlocked {
+				cc.ErrorChan <- xerror.NewRuntimeErrorf("device %s is blocked", peerInfo.ID.Pretty())
+				continue
+			}
+
 			cc.LogChan <- fmt.Sprintf("connecting to peer host: %s", peerInfo)
 
 			if err := cc.Host.Connect(ctx, peerInfo); err != nil {
@@ -98,8 +108,16 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 				continue
 			}
 
-			dv := device.NewDevice(peerInfo, stream)
-			cc.DeviceManager.AddDevice(dv)
+			if dv == nil {
+				dv = device.NewDevice(peerInfo, stream)
+			} else {
+				dv.AddressInfo = peerInfo
+				dv.Stream = stream
+				dv.Reader = bufio.NewReader(stream)
+				dv.Writer = bufio.NewWriter(stream)
+			}
+
+			cc.DeviceManager.UpdateDevice(dv)
 			go streamHandler.CreateReadData(dv.Reader, dv)
 
 			cc.LogChan <- fmt.Sprintf("connected to peer host: %s", peerInfo)
