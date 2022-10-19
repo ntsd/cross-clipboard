@@ -87,11 +87,16 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 
 			s.LogChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
 			dv.UpdateFromProtobuf(deviceData)
-			dv.Status = device.StatusPending
 
-			if s.Config.AutoTrust {
-				dv.Trust()
-				s.LogChan <- fmt.Sprintf("trusted %s by auto trust", deviceData.Name)
+			if dv.PgpEncrypter == nil {
+				dv.Status = device.StatusPending
+
+				if s.Config.AutoTrust {
+					dv.Trust()
+					s.LogChan <- fmt.Sprintf("trusted %s by auto trust", deviceData.Name)
+				}
+			} else {
+				dv.Status = device.StatusConnected
 			}
 
 			s.DeviceManager.UpdateDevice(dv)

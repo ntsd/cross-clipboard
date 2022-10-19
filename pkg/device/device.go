@@ -40,8 +40,14 @@ func NewDevice(
 }
 
 // Trust trust this device and change status to connected
-func (dv *Device) Trust() {
+func (dv *Device) Trust() error {
+	err := dv.CreatePGPEncrypter()
+	if err != nil {
+		return xerror.NewRuntimeError("can not create pgp encrypter").Wrap(err)
+	}
+
 	dv.Status = StatusConnected
+	return nil
 }
 
 // Block block this device
@@ -50,12 +56,10 @@ func (dv *Device) Block() {
 }
 
 // UpdateFromProtobuf update device from protobuf device data
-func (dv *Device) UpdateFromProtobuf(deviceData *protobuf.DeviceData) error {
+func (dv *Device) UpdateFromProtobuf(deviceData *protobuf.DeviceData) {
 	dv.Name = deviceData.Name
 	dv.OS = deviceData.Os
 	dv.PublicKey = deviceData.PublicKey
-
-	return dv.CreatePGPEncrypter()
 }
 
 func (dv *Device) CreatePGPEncrypter() error {

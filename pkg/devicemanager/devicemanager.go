@@ -1,15 +1,8 @@
 package devicemanager
 
 import (
-	"encoding/json"
-	"errors"
-	"io"
-	"os"
-
 	"github.com/ntsd/cross-clipboard/pkg/device"
 )
-
-const devicesFilePath = "devices.json"
 
 type DeviceManager struct {
 	Devices        map[string]*device.Device
@@ -44,53 +37,4 @@ func (dm *DeviceManager) UpdateDevice(device *device.Device) {
 	dm.Devices[device.AddressInfo.ID.Pretty()] = device
 	dm.DevicesChannel <- dm.Devices
 	dm.Save()
-}
-
-func (dm *DeviceManager) Save() error {
-	b, err := json.MarshalIndent(dm.Devices, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(devicesFilePath, b, 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (dm *DeviceManager) Load() error {
-	f, err := os.Open(devicesFilePath)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
-		}
-		return err
-	}
-	bytes, err := io.ReadAll(f)
-	if err != nil {
-		return err
-	}
-
-	var devices map[string]*device.Device
-	err = json.Unmarshal(bytes, &devices)
-	if err != nil {
-		return err
-	}
-
-	for _, dv := range devices {
-		if dv.Status != device.StatusBlocked {
-			dv.Status = device.StatusDisconnected
-			err := dv.CreatePGPEncrypter()
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	dm.Devices = devices
-	dm.DevicesChannel <- dm.Devices
-
-	return nil
 }

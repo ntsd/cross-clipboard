@@ -1,6 +1,6 @@
 # Cross Clipboard
 
-A multi device clipboard sharing over p2p in lan network.
+A multi device clipboard sharing over p2p network.
 
 ## TODO
 
@@ -8,9 +8,12 @@ A multi device clipboard sharing over p2p in lan network.
 - Image clipboard (Done)
 - Trust device (Done)
 - Terminal GUI (Ongoing)
-- Save device info to storage
+- Save device info to storage (Done)
+- Command Line Tools
+- Release binary file
+- Publish to Homebrew and Deb package
 - Handle disconnect and error
-- Avoid sending data back to the peer it received from
+- Fix avoid sending data back to the peer it received from
 - Mobile Support
 - Unit tests
 
@@ -19,18 +22,15 @@ A multi device clipboard sharing over p2p in lan network.
 - Go
 - libp2p
 - Multicast DNS (mDNS)
-- [Gogo Protobuf](https://github.com/gogo/protobuf)
+- Protobuf
 
 ## Installation
 
-### Linux
+### Headless Linux
 
 ```shell
-# install libx11-dev
-sudo apt install libx11-dev
-
-# install Xvfb
-sudo apt install -y xvfb
+# install libx11-dev abd Xvfb
+sudo apt install -y libx11-dev xvfb
 
 # initialize a virtual frame buffer (can put in .profile)
 Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
@@ -46,6 +46,10 @@ export DISPLAY=:99.0
 ```shell
 go install golang.org/x/mobile/cmd/gomobile@latest
 ```
+
+## Run
+
+`go run cmd/main.go`
 
 ## Proto gen
 
