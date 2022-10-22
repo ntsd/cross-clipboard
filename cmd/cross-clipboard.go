@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 
@@ -13,6 +14,9 @@ import (
 )
 
 func main() {
+	isTerminalMode := flag.Bool("t", false, "run in terminal mode")
+	flag.Parse()
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -23,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if cfg.TerminalMode {
+	if isTerminalMode != nil && *isTerminalMode {
 		for {
 			select {
 			case l := <-crossClipboard.LogChan:
@@ -45,7 +49,10 @@ func main() {
 						if input == "n" {
 							dv.Block()
 						} else {
-							dv.Trust()
+							err = dv.Trust()
+							if err != nil {
+								log.Println(fmt.Errorf("can not trust device: %w", err))
+							}
 						}
 					}
 					crossClipboard.DeviceManager.UpdateDevice(dv)

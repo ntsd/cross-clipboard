@@ -1,5 +1,8 @@
 run:
-	go run ./cmd/main.go
+	go run ./cmd/cross-clipboard.go
+
+build:
+	go build ./cmd/cross-clipboard.go
 
 bind-android:
 	gomobile bind -target=android ./mobile/...

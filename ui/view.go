@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
-	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"github.com/rivo/tview"
 )
 
@@ -95,25 +93,6 @@ func (v *View) restart() {
 		log.Fatal(err)
 	}
 
-	if cfg.TerminalMode {
-		for {
-			select {
-			case l := <-crossClipboard.LogChan:
-				log.Println("log: ", l)
-			case err := <-crossClipboard.ErrorChan:
-				var fatalErr *xerror.FatalError
-				if errors.As(err, &fatalErr) {
-					log.Fatal(fmt.Errorf("fatal error: %w", fatalErr))
-				}
-				log.Println(fmt.Errorf("runtime error: %w", err))
-			case cb := <-crossClipboard.ClipboardManager.ClipboardsChannel:
-				_ = cb
-			case dv := <-crossClipboard.DeviceManager.DevicesChannel:
-				_ = dv
-			}
-		}
-	} else {
-		v = NewView(crossClipboard)
-		v.Start()
-	}
+	v = NewView(crossClipboard)
+	v.Start()
 }

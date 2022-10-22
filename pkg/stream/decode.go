@@ -20,18 +20,15 @@ func (s *StreamHandler) DecodeData(bytes []byte) (*protobuf.ClipboardData, *prot
 	bytes = bytes[1:]
 
 	switch dataType {
-	case DATA_TYPE_CLIPBOARD, DATA_TYPE_SECURE_CLIPBOARD:
+	case DATA_TYPE_CLIPBOARD:
 		// decrypt clipboard data
-		if dataType == DATA_TYPE_SECURE_CLIPBOARD {
-			decryped, err := s.pgpDecrypter.DecryptMessage(bytes)
-			if err != nil {
-				return nil, nil, xerror.NewRuntimeError("error to decrypt clipboard data").Wrap(err)
-			}
-			bytes = decryped
+		decrypedData, err := s.pgpDecrypter.DecryptMessage(bytes)
+		if err != nil {
+			return nil, nil, xerror.NewRuntimeError("error to decrypt clipboard data").Wrap(err)
 		}
 
 		clipboardData := &protobuf.ClipboardData{}
-		err := proto.Unmarshal(bytes, clipboardData)
+		err = proto.Unmarshal(decrypedData, clipboardData)
 		if err != nil {
 			return nil, nil, xerror.NewRuntimeError("error unmarshaling clipboard data").Wrap(err)
 		}

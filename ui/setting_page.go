@@ -102,14 +102,6 @@ func (v *View) newSettingPage() *Page {
 			save(nil)
 		}))
 
-	formItems = append(formItems, tview.NewCheckbox().
-		SetLabel("encrypt message").
-		SetChecked(v.CrossClipboard.Config.EncryptEnabled).
-		SetChangedFunc(func(checked bool) {
-			cfg.EncryptEnabled = checked
-			save(nil)
-		}))
-
 	formItemsLen := len(formItems)
 	for _, formItem := range formItems {
 		settingForm.AddFormItem(formItem)
@@ -117,13 +109,6 @@ func (v *View) newSettingPage() *Page {
 
 	// add advance setting form item
 	var advanceFormItems []tview.FormItem
-
-	advanceFormItems = append(advanceFormItems, tview.NewCheckbox().
-		SetLabel("terminal mode").
-		SetChecked(v.CrossClipboard.Config.TerminalMode).
-		SetChangedFunc(func(checked bool) {
-			cfg.TerminalMode = checked
-		}))
 
 	advanceFormItems = append(advanceFormItems, tview.NewInputField().
 		SetLabel("groupname").

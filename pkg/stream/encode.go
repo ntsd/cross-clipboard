@@ -22,23 +22,19 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 	dataType := DATA_TYPE_CLIPBOARD
 
 	// encrypt clipboard data
-	if s.Config.EncryptEnabled {
-		clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
-		if err != nil {
-			return nil, xerror.NewRuntimeError("error to encrypt clipboard data").Wrap(err)
-		}
-		dataSize = len(clipboardDataEncrypted)
-		clipboardDataBytes = clipboardDataEncrypted
-		dataType = DATA_TYPE_SECURE_CLIPBOARD
-		s.LogChan <- fmt.Sprintf("dataSize: %d encrypted dataSize: %d", len(clipboardDataBytes), dataSize)
+	clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
+	if err != nil {
+		return nil, xerror.NewRuntimeError("error to encrypt clipboard data").Wrap(err)
 	}
+	encryptedDataSize := len(clipboardDataEncrypted)
+	s.LogChan <- fmt.Sprintf("data size: %d encrypted data size: %d", dataSize, encryptedDataSize)
 
 	// append data size + 1 bytes for data type
-	packageData = append(packageData, intToBytes(dataSize+1)...)
-	// append DATA TYPE
+	packageData = append(packageData, intToBytes(encryptedDataSize+1)...)
+	// append data type
 	packageData = append(packageData, dataType)
 	// append message
-	packageData = append(packageData, clipboardDataBytes...)
+	packageData = append(packageData, clipboardDataEncrypted...)
 
 	return packageData, nil
 }

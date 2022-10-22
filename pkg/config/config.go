@@ -20,13 +20,11 @@ type Config struct {
 	ListenPort int    `mapstructure:"listen_port"`
 
 	// Clipbaord Config
-	EncryptEnabled bool `mapstructure:"encrypt_enabled"` // encryption clipbaord enabled
-	MaxSize        int  `mapstructure:"max_size"`        // limit clipboard size to send
-	MaxHistory     int  `mapstructure:"max_history"`     // limit number of clipboard history
+	MaxSize    int `mapstructure:"max_size"`    // limit clipboard size to send
+	MaxHistory int `mapstructure:"max_history"` // limit number of clipboard history
 
 	// UI Config
-	TerminalMode bool `mapstructure:"terminal_mode"` // is terminal mode or ui mode
-	HiddenText   bool `mapstructure:"hidden_text"`   // hidden clipboard text in UI
+	HiddenText bool `mapstructure:"hidden_text"` // hidden clipboard text in UI
 
 	// Device Config
 	Username             string            `mapstructure:"-"`           // username of the device

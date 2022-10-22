@@ -9,7 +9,6 @@ A multi device clipboard sharing over p2p network.
 - Trust device (Done)
 - Terminal GUI (Ongoing)
 - Save device info to storage (Done)
-- Command Line Tools
 - Release binary file
 - Publish to Homebrew and Deb package
 - Handle disconnect and error
@@ -26,7 +25,15 @@ A multi device clipboard sharing over p2p network.
 
 ## Installation
 
+### Go install
+
+```shell
+go install github.com/ntsd/cross-clipboard@latest
+```
+
 ### Headless Linux
+
+for headless linux you might need to install `xvfb`.
 
 ```shell
 # install libx11-dev abd Xvfb
