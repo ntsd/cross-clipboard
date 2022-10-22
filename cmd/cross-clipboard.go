@@ -54,8 +54,8 @@ func main() {
 								log.Println(fmt.Errorf("can not trust device: %w", err))
 							}
 						}
+						crossClipboard.DeviceManager.UpdateDevice(dv)
 					}
-					crossClipboard.DeviceManager.UpdateDevice(dv)
 				}
 			}
 		}
