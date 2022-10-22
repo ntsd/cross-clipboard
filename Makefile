@@ -1,6 +1,9 @@
 run:
 	go run ./cmd/cross-clipboard.go
 
+run-terminal:
+	go run ./cmd/cross-clipboard.go
+
 build:
 	go build ./cmd/cross-clipboard.go
 
@@ -15,3 +18,6 @@ run-mobile:
 
 android-log:
 	adb logcat | grep GoLog
+
+protogen:
+	cd ./pkg/protobuf && protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative data.proto
