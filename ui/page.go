@@ -15,7 +15,6 @@ type Page struct {
 
 func (v *View) pageInputCapture(event *tcell.EventKey) *tcell.EventKey {
 	// TODO prevent form type to not change the page
-
 	if unicode.IsDigit(event.Rune()) {
 		pageNum := int(event.Rune() - '1')
 		if pageNum < len(v.pages) && pageNum >= 0 {

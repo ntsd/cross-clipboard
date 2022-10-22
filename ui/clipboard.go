@@ -35,10 +35,7 @@ func (v *View) newClipboardBox() tview.Primitive {
 				} else {
 					table.SetCell(row, 2, tview.NewTableCell("text"))
 					if !hiddenText {
-						text := stringutil.LimitStringLen(string(clipboard.Data), 10)
-						if len(string(clipboard.Data)) > 10 {
-							text += "..."
-						}
+						text := stringutil.LimitStringLen(string(clipboard.Data), 100)
 						table.SetCell(row, 3, tview.NewTableCell(text))
 					}
 				}

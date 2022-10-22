@@ -21,7 +21,7 @@ func (v *View) newLogPage() *Page {
 		for {
 			select {
 			case log := <-v.CrossClipboard.LogChan:
-				fmt.Fprint(textView, fmt.Sprintf("[blue]log:[white] %s\n", log))
+				fmt.Fprintf(textView, "[blue]log:[white] %s\n", log)
 			case err := <-v.CrossClipboard.ErrorChan:
 				var fatalErr *xerror.FatalError
 				if errors.As(err, &fatalErr) {
@@ -29,7 +29,7 @@ func (v *View) newLogPage() *Page {
 					log.Fatal(fmt.Errorf("fatal error: %w", fatalErr))
 				}
 
-				fmt.Fprint(textView, fmt.Sprintf("[red]err: %s[white]\n", err))
+				fmt.Fprintf(textView, "[red]err: %s[white]\n", err)
 			}
 		}
 	}()
