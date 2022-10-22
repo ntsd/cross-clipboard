@@ -88,11 +88,9 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("listen_host", "0.0.0.0")
 	viper.SetDefault("listen_port", 4001)
 
-	viper.SetDefault("encrypt_enabled", true)
 	viper.SetDefault("max_size", 16)
 	viper.SetDefault("max_history", 10)
 
-	viper.SetDefault("terminal_mode", false)
 	viper.SetDefault("hidden_text", false)
 
 	idPem, err := crypto.GenerateIDPem()

@@ -20,7 +20,7 @@ func (v *View) newClipboardBox() tview.Primitive {
 
 			table.Clear()
 			table.SetCell(0, 0, tview.NewTableCell("time").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
-			table.SetCell(0, 1, tview.NewTableCell("size (bytes)").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
+			table.SetCell(0, 1, tview.NewTableCell("size").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			table.SetCell(0, 2, tview.NewTableCell("type").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			if !hiddenText {
 				table.SetCell(0, 3, tview.NewTableCell("text").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
@@ -35,7 +35,11 @@ func (v *View) newClipboardBox() tview.Primitive {
 				} else {
 					table.SetCell(row, 2, tview.NewTableCell("text"))
 					if !hiddenText {
-						table.SetCell(row, 3, tview.NewTableCell(stringutil.LimitStringLen(string(clipboard.Data), 10)))
+						text := stringutil.LimitStringLen(string(clipboard.Data), 10)
+						if len(string(clipboard.Data)) > 10 {
+							text += "..."
+						}
+						table.SetCell(row, 3, tview.NewTableCell(text))
 					}
 				}
 			}

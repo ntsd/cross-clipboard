@@ -20,31 +20,23 @@ loop:
 			if !ok {
 				break loop
 			}
-			err := s.sendClipboard(textBytes, false)
-			if err != nil {
-				s.ErrorChan <- xerror.NewRuntimeError("error sending text clipboard data").Wrap(err)
-				break loop
-			}
+			s.sendClipboard(textBytes, false)
 		case imageBytes, ok := <-s.ClipboardManager.ReadImageChannel:
 			if !ok {
 				break loop
 			}
-			err := s.sendClipboard(imageBytes, true)
-			if err != nil {
-				s.ErrorChan <- xerror.NewRuntimeError("error sending image clipboard data").Wrap(err)
-				break loop
-			}
+			s.sendClipboard(imageBytes, true)
 		}
 	}
-	s.LogChan <- fmt.Sprintf("ending write streams")
+	s.LogChan <- "ended write streams"
 }
 
-func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error {
+func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 	clipboardLength := len(clipboardBytes)
 	if clipboardLength == 0 {
 		// ignore empty clipboard data
 		s.LogChan <- "the clipboard is empty, ignoring"
-		return nil
+		return
 	}
 
 	now := time.Now()
@@ -64,7 +56,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 	// send data to each devices
 	for name, dv := range s.DeviceManager.Devices {
 		if dv.Status != device.StatusConnected {
-			s.ErrorChan <- xerror.NewRuntimeErrorf("device %s status is not connected", name)
+			// skip disconnected devices
 			continue
 		}
 
@@ -93,8 +85,6 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) error
 			s.DeviceManager.UpdateDevice(dv)
 		}
 	}
-
-	return nil
 }
 
 // WriteData write data to the writer
