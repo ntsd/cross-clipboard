@@ -6,11 +6,13 @@ import (
 	"io"
 	"os"
 
+	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
+	"github.com/ntsd/go-utils/pkg/stringutil"
 )
 
-const devicesFilePath = "devices.json"
+const devicesFileName = "devices.json"
 
 func (dm *DeviceManager) Save() error {
 	b, err := json.MarshalIndent(dm.Devices, "", "  ")
@@ -18,7 +20,13 @@ func (dm *DeviceManager) Save() error {
 		return xerror.NewRuntimeError("can not marshal devices").Wrap(err)
 	}
 
-	err = os.WriteFile(devicesFilePath, b, 0644)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return xerror.NewRuntimeError("can not get user home dir").Wrap(err)
+	}
+	deviceFilePath := stringutil.JoinURL(homeDir, config.ConfigDirName, devicesFileName)
+
+	err = os.WriteFile(deviceFilePath, b, 0644)
 	if err != nil {
 		return xerror.NewRuntimeError("can not write devices file").Wrap(err)
 	}
@@ -27,7 +35,13 @@ func (dm *DeviceManager) Save() error {
 }
 
 func (dm *DeviceManager) Load() error {
-	f, err := os.Open(devicesFilePath)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return xerror.NewRuntimeError("can not get user home dir").Wrap(err)
+	}
+	deviceFilePath := stringutil.JoinURL(homeDir, config.ConfigDirName, devicesFileName)
+
+	f, err := os.Open(deviceFilePath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil

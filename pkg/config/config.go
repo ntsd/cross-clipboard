@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 
 	gopenpgp "github.com/ProtonMail/gopenpgp/v2/crypto"
@@ -9,8 +10,11 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"github.com/ntsd/go-utils/pkg/maputil"
+	"github.com/ntsd/go-utils/pkg/stringutil"
 	"github.com/spf13/viper"
 )
+
+const ConfigDirName = ".cross-clipboard"
 
 // Config config struct for cross clipbaord
 type Config struct {
@@ -75,14 +79,18 @@ func (c *Config) ResetToDefault() error {
 }
 
 func LoadConfig() (*Config, error) {
-	user, err := user.Current()
+	thisUser, err := user.Current()
 	if err != nil {
 		return nil, xerror.NewFatalError("error to get user").Wrap(err)
 	}
 
+	configPath := stringutil.JoinURL(thisUser.HomeDir, ConfigDirName)
+	// make directory if not exists
+	os.Mkdir(configPath, os.ModeDir)
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+	viper.AddConfigPath(configPath)
 
 	viper.SetDefault("group_name", "default")
 	viper.SetDefault("listen_host", "0.0.0.0")
@@ -98,7 +106,7 @@ func LoadConfig() (*Config, error) {
 		return nil, xerror.NewFatalError("failed to generate default id pem").Wrap(err)
 	}
 	viper.SetDefault("id", idPem)
-	armoredPrivkey, err := crypto.GeneratePGPKey(user.Username)
+	armoredPrivkey, err := crypto.GeneratePGPKey(thisUser.Username)
 	if err != nil {
 		return nil, xerror.NewFatalError("failed to generate default pgp key").Wrap(err)
 	}
@@ -126,7 +134,7 @@ func LoadConfig() (*Config, error) {
 	}
 
 	// set home username
-	cfg.Username = user.Username
+	cfg.Username = thisUser.Username
 
 	// unmarshal id
 	idPK, err := crypto.UnmarshalIDPrivateKey(cfg.IDPem)
