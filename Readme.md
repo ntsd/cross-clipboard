@@ -16,12 +16,11 @@ A multi device clipboard sharing over P2P network.
 - Terminal GUI (Ongoing) - terminal user interface for the end user
 - Cross-platform mobile (Plan) - support iOS and Android
 
-## Technology
+## Libraries 
 
-- Go
-- libp2p
-- Multicast DNS (mDNS)
-- Protobuf
+- [libp2p](https://github.com/libp2p/go-libp2p)
+- [protobuf](https://developers.google.com/protocol-buffers)
+- [clipboard](https://github.com/golang-design/clipboard)
 
 ## Installation
 
@@ -30,7 +29,7 @@ A multi device clipboard sharing over P2P network.
 for Go user you can just install using go package
 
 ```shell
-go install github.com/ntsd/cross-clipboard@latest
+go install github.com/ntsd/cross-clipboard/cmd/cross-clipboard@latest
 ```
 
 ### Headless Linux
@@ -60,14 +59,14 @@ Terminal mode
 
 ```shell
 git clone https://github.com/ntsd/cross-clipboard
-go run cmd/cross-clipboard.go
+go run cmd/cross-clipboard/main.go
 ```
 
 ## Build
 
 ### Build Desktop
 
-`go build cmd/cross-clipboard.go`
+`go build cmd/cross-clipboard/main.go`
 
 ### Build Mobile (Plan)
 

@@ -1,6 +1,11 @@
+# binary
 *.apk
 *.exe
+
+# dev
 .vscode
+docker-compose.yaml
+
+# config
 config.yaml
 devices.json
-docker-compose.yaml
