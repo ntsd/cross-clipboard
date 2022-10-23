@@ -14,4 +14,4 @@ COPY . ./
 
 EXPOSE 4001
 
-CMD go run ./cmd/main.go
+CMD go run ./cmd/cross-clipboard.go

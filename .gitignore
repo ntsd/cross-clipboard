@@ -3,3 +3,4 @@
 .vscode
 config.yaml
 devices.json
+docker-compose.yaml

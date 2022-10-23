@@ -9,11 +9,11 @@ A multi device clipboard sharing over P2P network.
 ## Features
 
 - Share text/image clipboard data (Done) - user can share clipboard data with other devices
-- P2P connection (Done) - the device will connect to others using P2P connection
+- P2P connection (Done) - the device will connect to others using the P2P connection
 - Multicast DNS (Done) - discover a device in the same network
 - E2E encryption (Done) - encrypt the clipboard data using OpenPGP
-- Cross-platform desktop (Done) - support Windows, Linux and Darwin (macOS)
-- Terminal GUI (Ongoing) - terminal user interface for end user
+- Cross-platform desktop (Done) - support Windows, Linux, and Darwin (macOS)
+- Terminal GUI (Ongoing) - terminal user interface for the end user
 - Cross-platform mobile (Plan) - support iOS and Android
 
 ## Technology
@@ -48,13 +48,26 @@ export DISPLAY=:99.0
 
 ## Run
 
-`go run cmd/cross-clipboard.go`
+UI mode
+
+`cross-clipboard`
+
+Terminal mode
+
+`cross-clipboard -t`
+
+## Development
+
+```shell
+git clone https://github.com/ntsd/cross-clipboard
+go run cmd/cross-clipboard.go
+```
 
 ## Build
 
 ### Build Desktop
 
-`go build ./cmd/cross-clipboard.go`
+`go build cmd/cross-clipboard.go`
 
 ### Build Mobile (Plan)
 
@@ -66,7 +79,7 @@ export DISPLAY=:99.0
 go install golang.org/x/mobile/cmd/gomobile@latest
 ```
 
-`gomobile build ./mobile/...`
+`gomobile build mobile/...`
 
 ### Protobuf gen
 
@@ -79,5 +92,6 @@ Generate a protobuf go file using protoc
 - Release binary file (Ongoing)
 - Publish to Homebrew and Deb package (Ongoing)
 - Handle disconnect and error (Ongoing)
+- Fix bug on this PNG image <https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100> (Ongoing)
 - Fix avoid sending data back to the peer it received from (Plan)
 - Unit testing (Plan)
