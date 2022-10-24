@@ -9,8 +9,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// EncodeClipboardData encode data for stream package `| data size (int 4 bytes) | data type (enum 1 byte) | protobuf message (struct n bytes) |`
-func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *protobuf.ClipboardData) ([]byte, error) {
+// encodeClipboardData encode data for stream package `| data size (int 4 bytes) | data type (enum 1 byte) | protobuf message (struct n bytes) |`
+func (s *StreamHandler) encodeClipboardData(dv *device.Device, clipboardData *protobuf.ClipboardData) ([]byte, error) {
 	packageData := []byte{}
 
 	// create proto clipboard data
@@ -26,7 +26,7 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 		return nil, xerror.NewRuntimeError("error to encrypt clipboard data").Wrap(err)
 	}
 	encryptedDataSize := len(clipboardDataEncrypted)
-	s.LogChan <- fmt.Sprintf("data size: %d encrypted data size: %d", dataSize, encryptedDataSize)
+	s.logChan <- fmt.Sprintf("data size: %d encrypted data size: %d", dataSize, encryptedDataSize)
 
 	// append data size + 1 bytes for data type
 	packageData = append(packageData, intToBytes(encryptedDataSize+1)...)
@@ -38,8 +38,8 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 	return packageData, nil
 }
 
-// EncodeDeviceData encode data for stream package `| data size (int 4 bytes) | data type (enum 1 byte) | protobuf message (struct n bytes) |`
-func (s *StreamHandler) EncodeDeviceData(data *protobuf.DeviceData) ([]byte, error) {
+// encodeDeviceData encode data for stream package `| data size (int 4 bytes) | data type (enum 1 byte) | protobuf message (struct n bytes) |`
+func (s *StreamHandler) encodeDeviceData(data *protobuf.DeviceData) ([]byte, error) {
 	packageData := []byte{}
 
 	// create proto device data
@@ -59,8 +59,8 @@ func (s *StreamHandler) EncodeDeviceData(data *protobuf.DeviceData) ([]byte, err
 	return packageData, nil
 }
 
-// EncodeSignal encode signal type `| data size (int 4 bytes) | signal type |`
-func (s *StreamHandler) EncodeSignal(signal Signal) ([]byte, error) {
+// encodeSignal encode signal type `| data size (int 4 bytes) | signal type |`
+func (s *StreamHandler) encodeSignal(signal Signal) ([]byte, error) {
 	packageData := []byte{}
 
 	// append data size + 1 bytes for data type

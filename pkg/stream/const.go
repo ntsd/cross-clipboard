@@ -15,6 +15,6 @@ const (
 	DataTypeClipboard DataType = 0xFE // use for clipboard data
 
 	// signal is the first byte after data size to identify the signal type
-	SignalExit      Signal = 0xFD // ending exit signal
-	SignalHandshake Signal = 0xFC // request handshake signal
+	SignalDisconnect        Signal = 0xFD // ending exit signal
+	SignalRequestDeviceData Signal = 0xFC // request device data signal
 )

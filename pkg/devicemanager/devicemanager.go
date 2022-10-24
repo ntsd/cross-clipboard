@@ -1,18 +1,22 @@
 package devicemanager
 
 import (
+	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/device"
 )
 
 type DeviceManager struct {
 	Devices        map[string]*device.Device
 	DevicesChannel chan map[string]*device.Device
+
+	config *config.Config
 }
 
-func NewDeviceManager() *DeviceManager {
+func NewDeviceManager(cfg *config.Config) *DeviceManager {
 	return &DeviceManager{
 		Devices:        make(map[string]*device.Device),
 		DevicesChannel: make(chan map[string]*device.Device),
+		config:         cfg,
 	}
 }
 

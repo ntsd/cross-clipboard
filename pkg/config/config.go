@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const ConfigDirName = ".cross-clipboard"
+const configDirName = ".cross-clipboard"
 
 // Config config struct for cross clipbaord
 type Config struct {
@@ -37,11 +37,12 @@ type Config struct {
 	PGPPrivateKey        *gopenpgp.Key     `mapstructure:"-"`           // pgp private key for e2e encryption
 	PGPPrivateKeyArmored string            `mapstructure:"private_key"` // armor pgp private key
 	AutoTrust            bool              `mapstructure:"auto_trust"`  // auto trust device
+
+	ConfigDirPath string `mapstructure:"config_dir_path"` // config directory path
 }
 
 // Save save config to file
 func (c *Config) Save() error {
-
 	// set viper value from struct
 	m, err := maputil.ToMapString(c, "mapstructure")
 	if err != nil {
@@ -66,16 +67,12 @@ func (c *Config) Save() error {
 
 // Save save config to file
 func (c *Config) ResetToDefault() error {
-	// TODO fix this
-
-	newCfg := &Config{}
-
-	err := viper.Unmarshal(newCfg)
+	err := os.RemoveAll(c.ConfigDirPath)
 	if err != nil {
-		return xerror.NewFatalError("failed to viper.Unmarshal").Wrap(err)
+		return err
 	}
 
-	return newCfg.Save()
+	return nil
 }
 
 func LoadConfig() (*Config, error) {
@@ -84,13 +81,13 @@ func LoadConfig() (*Config, error) {
 		return nil, xerror.NewFatalError("error to get user").Wrap(err)
 	}
 
-	configPath := stringutil.JoinURL(thisUser.HomeDir, ConfigDirName)
+	dotPath := stringutil.JoinURL(thisUser.HomeDir, configDirName)
 	// make directory if not exists
-	os.Mkdir(configPath, os.ModeDir)
+	os.Mkdir(dotPath, os.ModeDir)
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(configPath)
+	viper.AddConfigPath(dotPath)
 
 	viper.SetDefault("group_name", "default")
 	viper.SetDefault("listen_host", "0.0.0.0")
@@ -100,6 +97,8 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("max_history", 10)
 
 	viper.SetDefault("hidden_text", true)
+
+	viper.SetDefault("config_dir_path", dotPath)
 
 	idPem, err := crypto.GenerateIDPem()
 	if err != nil {

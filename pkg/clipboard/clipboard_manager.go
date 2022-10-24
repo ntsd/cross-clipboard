@@ -3,7 +3,6 @@ package clipboard
 import (
 	"bytes"
 	"context"
-	"sync"
 
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"golang.design/x/clipboard"
@@ -11,13 +10,13 @@ import (
 
 // ClipboardManager struct for clipbaord manager
 type ClipboardManager struct {
-	Config            *config.Config
+	config *config.Config
+
 	ReadTextChannel   <-chan []byte
 	ReadImageChannel  <-chan []byte
 	Clipboards        []Clipboard
 	ClipboardsChannel chan []Clipboard
 	CurrentClipboard  []byte
-	mu                sync.RWMutex
 }
 
 // NewClipboardManager create new clipbaord manager
@@ -31,7 +30,7 @@ func NewClipboardManager(cfg *config.Config) *ClipboardManager {
 	imgCh := clipboard.Watch(context.Background(), clipboard.FmtImage)
 
 	return &ClipboardManager{
-		Config:            cfg,
+		config:            cfg,
 		ReadTextChannel:   textCh,
 		ReadImageChannel:  imgCh,
 		ClipboardsChannel: make(chan []Clipboard),
@@ -65,7 +64,7 @@ func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
 	if bytes.Compare(c.CurrentClipboard, newClipboard.Data) != 0 {
 		c.CurrentClipboard = newClipboard.Data
-		c.Clipboards = limitAppend(c.Config.MaxHistory, c.Clipboards, newClipboard)
+		c.Clipboards = limitAppend(c.config.MaxHistory, c.Clipboards, newClipboard)
 		c.ClipboardsChannel <- c.Clipboards
 	}
 }

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"unicode"
 
@@ -111,6 +112,15 @@ func (v *View) newSettingPage() *Page {
 	var advanceFormItems []tview.FormItem
 
 	advanceFormItems = append(advanceFormItems, tview.NewInputField().
+		SetLabel("config path").
+		SetText(v.CrossClipboard.Config.ConfigDirPath).
+		SetFieldWidth(50).
+		SetAcceptanceFunc(nil).
+		SetChangedFunc(func(text string) {
+			cfg.ConfigDirPath = text
+		}))
+
+	advanceFormItems = append(advanceFormItems, tview.NewInputField().
 		SetLabel("groupname").
 		SetText(v.CrossClipboard.Config.GroupName).
 		SetFieldWidth(50).
@@ -152,14 +162,15 @@ func (v *View) newSettingPage() *Page {
 		}, nil)
 	})
 	advanceForm.AddButton("default", func() {
-		v.newConfirmModal("do you want to reset to default and restart?", func() {
+		v.newConfirmModal("do you want to reset to default and exit?", func() {
 			err := cfg.ResetToDefault()
 			if err != nil {
 				v.CrossClipboard.ErrorChan <- xerror.NewRuntimeErrorf("can not reset config: %v", err)
 				return
 			}
 
-			v.restart()
+			v.Stop()
+			os.Exit(0)
 		}, nil)
 	})
 	for i := 0; i < advanceForm.GetButtonCount(); i++ {

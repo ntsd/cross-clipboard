@@ -19,9 +19,6 @@ func main() {
 	isTerminalMode := flag.Bool("t", false, "run in terminal mode")
 	flag.Parse()
 
-	exitSignal := make(chan os.Signal)
-	signal.Notify(exitSignal, os.Interrupt)
-
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -33,6 +30,9 @@ func main() {
 	}
 
 	if isTerminalMode != nil && *isTerminalMode {
+		exitSignal := make(chan os.Signal, 1)
+		signal.Notify(exitSignal, os.Interrupt)
+
 		for {
 			select {
 			case l := <-crossClipboard.LogChan:
@@ -64,7 +64,11 @@ func main() {
 				}
 			case exit := <-exitSignal:
 				log.Printf("got %s signal. aborting...\n", exit)
-				crossClipboard.Stop()
+				err := crossClipboard.Stop()
+				if err != nil {
+					log.Panicln(fmt.Errorf("error to graceful eixt: %w", err))
+				}
+				os.Exit(0)
 			}
 		}
 	} else {

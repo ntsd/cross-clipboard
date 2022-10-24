@@ -4,103 +4,98 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"runtime"
 
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/device"
-	"github.com/ntsd/cross-clipboard/pkg/protobuf"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
 )
 
 // CreateReadData craete a new read streaming for host or peer
 func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) {
-	// sending this device data and public key
-	pub, err := s.Config.PGPPrivateKey.GetPublicKey()
-	if err != nil {
-		s.ErrorChan <- xerror.NewFatalError("error to generate pubic key").Wrap(err)
-		return
-	}
-	s.LogChan <- fmt.Sprintf("sending device info and public key to %s", dv.AddressInfo.ID.Pretty())
-	deviceData, err := s.EncodeDeviceData(&protobuf.DeviceData{
-		Name:      s.Config.Username,
-		Os:        runtime.GOOS,
-		PublicKey: pub,
-	})
-	err = s.WriteData(dv.Writer, deviceData)
-	if err != nil {
-		s.ErrorChan <- xerror.NewRuntimeErrorf("cannot send device data to %s", dv.AddressInfo.ID.Pretty()).Wrap(err)
-		dv.Status = device.StatusError
-		s.DeviceManager.UpdateDevice(dv)
-		return
-	}
+	s.logChan <- fmt.Sprintf("sending device info and public key to %s", dv.AddressInfo.ID.Pretty())
+
+	s.sendDeviceData(dv)
 
 	// loop for incoming message
+exit:
 	for {
 		dataSize, err := readDataSize(reader)
 		if err != nil {
-			s.ErrorChan <- xerror.NewRuntimeError("error reading data size").Wrap(err)
+			s.errorChan <- xerror.NewRuntimeError("error reading data size").Wrap(err)
 			dv.Status = device.StatusError // TODO: handle peer exit to disconnect
-			s.DeviceManager.UpdateDevice(dv)
+			s.deviceManager.UpdateDevice(dv)
 			break
 		}
 
 		if dataSize <= 0 {
-			s.ErrorChan <- xerror.NewRuntimeErrorf("data size < 0: %d", dataSize)
+			s.errorChan <- xerror.NewRuntimeErrorf("data size < 0: %d", dataSize)
 			dv.Status = device.StatusError
-			s.DeviceManager.UpdateDevice(dv)
+			s.deviceManager.UpdateDevice(dv)
 			break
 		}
 
-		s.LogChan <- fmt.Sprintf("received data size %d", dataSize)
+		s.logChan <- fmt.Sprintf("received data size %d", dataSize)
 
 		buffer := make([]byte, dataSize)
 		readBytes, err := io.ReadFull(reader, buffer)
 		if err != nil {
-			s.ErrorChan <- xerror.NewRuntimeError("error reading from buffer").Wrap(err)
+			s.errorChan <- xerror.NewRuntimeError("error reading from buffer").Wrap(err)
 			dv.Status = device.StatusError
-			s.DeviceManager.UpdateDevice(dv)
+			s.deviceManager.UpdateDevice(dv)
 			break
 		}
 		if readBytes != dataSize {
-			s.ErrorChan <- xerror.NewRuntimeErrorf("not reading full bytes read: %d size: %d", readBytes, dataSize)
+			s.errorChan <- xerror.NewRuntimeErrorf("not reading full bytes read: %d size: %d", readBytes, dataSize)
 			dv.Status = device.StatusError
-			s.DeviceManager.UpdateDevice(dv)
+			s.deviceManager.UpdateDevice(dv)
 			break
 		}
-		s.LogChan <- fmt.Sprintf("read data size %d", readBytes)
+		s.logChan <- fmt.Sprintf("read data size %d", readBytes)
 
-		clipboardData, deviceData, err := s.DecodeData(buffer)
+		clipboardData, deviceData, signal, err := s.decodeData(buffer)
 		if err != nil {
-			s.ErrorChan <- xerror.NewRuntimeError("error decoding data").Wrap(err)
+			s.errorChan <- xerror.NewRuntimeError("error decoding data").Wrap(err)
 			dv.Status = device.StatusError
-			s.DeviceManager.UpdateDevice(dv)
+			s.deviceManager.UpdateDevice(dv)
 			break
+		}
+
+		if signal != nil {
+			s.logChan <- fmt.Sprintf("received signal %v, peer: %s size: %d", signal, dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
+			switch *signal {
+			case SignalDisconnect:
+				dv.Status = device.StatusDisconnected
+				s.deviceManager.UpdateDevice(dv)
+				break exit
+			case SignalRequestDeviceData:
+				s.sendDeviceData(dv)
+			}
 		}
 
 		if clipboardData != nil {
-			s.LogChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
-			s.ClipboardManager.WriteClipboard(clipboard.FromProtobuf(clipboardData))
+			s.logChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
+			s.clipboardManager.WriteClipboard(clipboard.FromProtobuf(clipboardData))
 		}
 
 		if deviceData != nil {
-			s.LogChan <- fmt.Sprintf("received device data, peer: %s", dv.AddressInfo.ID.Pretty())
+			s.logChan <- fmt.Sprintf("received device data, peer: %s", dv.AddressInfo.ID.Pretty())
 
-			s.LogChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
+			s.logChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
 			dv.UpdateFromProtobuf(deviceData)
 
 			if dv.PgpEncrypter == nil {
 				dv.Status = device.StatusPending
 
-				if s.Config.AutoTrust {
+				if s.config.AutoTrust {
 					dv.Trust()
-					s.LogChan <- fmt.Sprintf("trusted %s by auto trust", deviceData.Name)
+					s.logChan <- fmt.Sprintf("trusted %s by auto trust", deviceData.Name)
 				}
 			} else {
 				dv.Status = device.StatusConnected
 			}
 
-			s.DeviceManager.UpdateDevice(dv)
+			s.deviceManager.UpdateDevice(dv)
 		}
 	}
-	s.LogChan <- fmt.Sprintf("ending read stream for peer: %s", dv.AddressInfo.ID.Pretty())
+	s.logChan <- fmt.Sprintf("ending read stream for peer: %s", dv.AddressInfo.ID.Pretty())
 }

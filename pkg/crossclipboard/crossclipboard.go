@@ -39,7 +39,7 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 	}
 
 	cc.ClipboardManager = clipboard.NewClipboardManager(cc.Config)
-	cc.DeviceManager = devicemanager.NewDeviceManager()
+	cc.DeviceManager = devicemanager.NewDeviceManager(cc.Config)
 
 	ctx := context.Background()
 
@@ -128,7 +128,7 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 }
 
 func (cc *CrossClipboard) Stop() error {
-	// TODO graceful exit
+	// TODO: graceful exit, send disconnect signal, disconnect to all device
 	cc = nil
 	return nil
 }
