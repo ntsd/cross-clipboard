@@ -39,7 +39,7 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 		dataSize, err := readDataSize(reader)
 		if err != nil {
 			s.ErrorChan <- xerror.NewRuntimeError("error reading data size").Wrap(err)
-			dv.Status = device.StatusError
+			dv.Status = device.StatusError // TODO: handle peer exit to disconnect
 			s.DeviceManager.UpdateDevice(dv)
 			break
 		}

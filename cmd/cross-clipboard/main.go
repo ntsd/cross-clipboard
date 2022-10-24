@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
@@ -16,6 +18,9 @@ import (
 func main() {
 	isTerminalMode := flag.Bool("t", false, "run in terminal mode")
 	flag.Parse()
+
+	exitSignal := make(chan os.Signal)
+	signal.Notify(exitSignal, os.Interrupt)
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -57,6 +62,9 @@ func main() {
 						crossClipboard.DeviceManager.UpdateDevice(dv)
 					}
 				}
+			case exit := <-exitSignal:
+				log.Printf("got %s signal. aborting...\n", exit)
+				crossClipboard.Stop()
 			}
 		}
 	} else {

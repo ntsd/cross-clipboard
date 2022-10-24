@@ -99,7 +99,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("max_size", 16)
 	viper.SetDefault("max_history", 10)
 
-	viper.SetDefault("hidden_text", false)
+	viper.SetDefault("hidden_text", true)
 
 	idPem, err := crypto.GenerateIDPem()
 	if err != nil {

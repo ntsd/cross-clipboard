@@ -4,7 +4,6 @@
 
 # dev
 .vscode
-docker-compose.yaml
 
 # config
 config.yaml

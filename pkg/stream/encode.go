@@ -19,7 +19,6 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 		return nil, xerror.NewRuntimeError("error marshaling clipboard data").Wrap(err)
 	}
 	dataSize := len(clipboardDataBytes)
-	dataType := DATA_TYPE_CLIPBOARD
 
 	// encrypt clipboard data
 	clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
@@ -32,7 +31,7 @@ func (s *StreamHandler) EncodeClipboardData(dv *device.Device, clipboardData *pr
 	// append data size + 1 bytes for data type
 	packageData = append(packageData, intToBytes(encryptedDataSize+1)...)
 	// append data type
-	packageData = append(packageData, dataType)
+	packageData = append(packageData, byte(DataTypeClipboard))
 	// append message
 	packageData = append(packageData, clipboardDataEncrypted...)
 
@@ -53,9 +52,21 @@ func (s *StreamHandler) EncodeDeviceData(data *protobuf.DeviceData) ([]byte, err
 	// append data size + 1 bytes for data type
 	packageData = append(packageData, intToBytes(dataSize+1)...)
 	// append DATA TYPE
-	packageData = append(packageData, DATA_TYPE_DEVICE)
+	packageData = append(packageData, byte(DataTypeDevice))
 	// append message
 	packageData = append(packageData, deviceDataBytes...)
+
+	return packageData, nil
+}
+
+// EncodeSignal encode signal type `| data size (int 4 bytes) | signal type |`
+func (s *StreamHandler) EncodeSignal(signal Signal) ([]byte, error) {
+	packageData := []byte{}
+
+	// append data size + 1 bytes for data type
+	packageData = append(packageData, intToBytes(1)...)
+	// append DATA TYPE
+	packageData = append(packageData, byte(signal))
 
 	return packageData, nil
 }

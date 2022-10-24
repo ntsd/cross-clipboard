@@ -20,7 +20,7 @@ func (s *StreamHandler) DecodeData(bytes []byte) (*protobuf.ClipboardData, *prot
 	bytes = bytes[1:]
 
 	switch dataType {
-	case DATA_TYPE_CLIPBOARD:
+	case byte(DataTypeClipboard):
 		// decrypt clipboard data
 		decrypedData, err := s.pgpDecrypter.DecryptMessage(bytes)
 		if err != nil {
@@ -33,7 +33,7 @@ func (s *StreamHandler) DecodeData(bytes []byte) (*protobuf.ClipboardData, *prot
 			return nil, nil, xerror.NewRuntimeError("error unmarshaling clipboard data").Wrap(err)
 		}
 		return clipboardData, nil, nil
-	case DATA_TYPE_DEVICE:
+	case byte(DataTypeDevice):
 		deviceData := &protobuf.DeviceData{}
 		err := proto.Unmarshal(bytes, deviceData)
 		if err != nil {

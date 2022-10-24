@@ -2,10 +2,19 @@ package stream
 
 import "github.com/libp2p/go-libp2p-core/protocol"
 
+type (
+	DataType byte
+	Signal   byte
+)
+
 const (
 	PROTOCAL_ID protocol.ID = protocol.ID("/cross-clipboard/0.0.1")
 
-	// DATA TYPE first byte of the message
-	DATA_TYPE_DEVICE    byte = 0xFF
-	DATA_TYPE_CLIPBOARD byte = 0xFE
+	// data type is the first byte after data size to identify the message type
+	DataTypeDevice    DataType = 0xFF // use for device data
+	DataTypeClipboard DataType = 0xFE // use for clipboard data
+
+	// signal is the first byte after data size to identify the signal type
+	SignalExit      Signal = 0xFD // ending exit signal
+	SignalHandshake Signal = 0xFC // request handshake signal
 )
