@@ -34,8 +34,6 @@ exit:
 			break
 		}
 
-		s.logChan <- fmt.Sprintf("received data size %d", dataSize)
-
 		buffer := make([]byte, dataSize)
 		readBytes, err := io.ReadFull(reader, buffer)
 		if err != nil {
@@ -50,7 +48,6 @@ exit:
 			s.deviceManager.UpdateDevice(dv)
 			break
 		}
-		s.logChan <- fmt.Sprintf("read data size %d", readBytes)
 
 		clipboardData, deviceData, signal, err := s.decodeData(buffer)
 		if err != nil {

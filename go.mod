@@ -3,12 +3,16 @@ module github.com/ntsd/cross-clipboard
 go 1.18
 
 require (
+	github.com/ProtonMail/gopenpgp/v2 v2.4.10
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210905002822-f057f0a857a1
 	github.com/libp2p/go-libp2p v0.19.1
 	github.com/libp2p/go-libp2p-core v0.15.1
 	github.com/multiformats/go-multiaddr v0.5.0
+	github.com/ntsd/go-utils v0.0.0-20221002000426-fd4acd2afaa5
+	github.com/rivo/tview v0.0.0-20220307222120-9994674d60a8
 	github.com/spf13/viper v1.12.0
 	golang.design/x/clipboard v0.6.2
+	google.golang.org/protobuf v1.28.0
 )
 
 require (
@@ -21,7 +25,6 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/ntsd/go-utils v0.0.0-20221002000426-fd4acd2afaa5 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
@@ -40,7 +43,6 @@ require (
 )
 
 require (
-	github.com/ProtonMail/gopenpgp/v2 v2.4.10
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
@@ -131,7 +133,6 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/raulk/clock v1.1.0 // indirect
 	github.com/raulk/go-watchdog v1.2.0 // indirect
-	github.com/rivo/tview v0.0.0-20220307222120-9994674d60a8
 	github.com/spacemonkeygo/spacelog v0.0.0-20180420211403-2296661a0572 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/whyrusleeping/multiaddr-filter v0.0.0-20160516205228-e903e4adabd7 // indirect
@@ -147,7 +148,6 @@ require (
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
-	google.golang.org/protobuf v1.28.0
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	lukechampine.com/blake3 v1.1.7 // indirect
 )

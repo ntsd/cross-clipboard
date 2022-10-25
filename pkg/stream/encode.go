@@ -1,8 +1,6 @@
 package stream
 
 import (
-	"fmt"
-
 	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/protobuf"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
@@ -18,7 +16,6 @@ func (s *StreamHandler) encodeClipboardData(dv *device.Device, clipboardData *pr
 	if err != nil {
 		return nil, xerror.NewRuntimeError("error marshaling clipboard data").Wrap(err)
 	}
-	dataSize := len(clipboardDataBytes)
 
 	// encrypt clipboard data
 	clipboardDataEncrypted, err := dv.PgpEncrypter.EncryptMessage(clipboardDataBytes)
@@ -26,7 +23,6 @@ func (s *StreamHandler) encodeClipboardData(dv *device.Device, clipboardData *pr
 		return nil, xerror.NewRuntimeError("error to encrypt clipboard data").Wrap(err)
 	}
 	encryptedDataSize := len(clipboardDataEncrypted)
-	s.logChan <- fmt.Sprintf("data size: %d encrypted data size: %d", dataSize, encryptedDataSize)
 
 	// append data size + 1 bytes for data type
 	packageData = append(packageData, intToBytes(encryptedDataSize+1)...)
