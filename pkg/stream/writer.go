@@ -41,13 +41,13 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 		return
 	}
 
-	cb := clipboard.Clipboard{
+	cb := &clipboard.Clipboard{
 		IsImage: isImage,
 		Data:    clipboardBytes,
 		Size:    uint32(clipboardLength),
 		Time:    time.Now(),
 	}
-	s.clipboardManager.UpdateClipboard(cb)
+	s.clipboardManager.AddClipboardToHistory(cb)
 
 	isReceivedClipboard := s.clipboardManager.IsReceivedClipboard(clipboardBytes)
 	clipboardData := cb.ToProtobuf()

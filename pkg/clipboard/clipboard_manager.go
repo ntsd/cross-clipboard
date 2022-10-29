@@ -13,11 +13,11 @@ import (
 type ClipboardManager struct {
 	config *config.Config
 
-	ReadTextChannel   <-chan []byte
-	ReadImageChannel  <-chan []byte
-	clipboards        []Clipboard
-	ClipboardsChannel chan []Clipboard
-	receivedClipboard *Clipboard
+	ReadTextChannel          <-chan []byte
+	ReadImageChannel         <-chan []byte
+	clipboardsHistory        []*Clipboard
+	ClipboardsHistoryChannel chan []*Clipboard
+	receivedClipboard        *Clipboard
 }
 
 // NewClipboardManager create new clipbaord manager
@@ -31,11 +31,11 @@ func NewClipboardManager(cfg *config.Config) *ClipboardManager {
 	imgCh := clipboard.Watch(context.Background(), clipboard.FmtImage)
 
 	return &ClipboardManager{
-		config:            cfg,
-		ReadTextChannel:   textCh,
-		ReadImageChannel:  imgCh,
-		ClipboardsChannel: make(chan []Clipboard),
-		clipboards:        []Clipboard{},
+		config:                   cfg,
+		ReadTextChannel:          textCh,
+		ReadImageChannel:         imgCh,
+		ClipboardsHistoryChannel: make(chan []*Clipboard),
+		clipboardsHistory:        []*Clipboard{},
 	}
 }
 
@@ -60,10 +60,10 @@ func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 	clipboard.Write(clipboard.FmtText, newClipboard.Data)
 }
 
-// UpdateClipboard add clipbaord to clipbaord history
-func (c *ClipboardManager) UpdateClipboard(newClipboard Clipboard) {
-	c.clipboards = limitAppend(c.config.MaxHistory, c.clipboards, newClipboard)
-	c.ClipboardsChannel <- c.clipboards
+// AddClipboardToHistory add clipbaord to clipbaord history
+func (c *ClipboardManager) AddClipboardToHistory(newClipboard *Clipboard) {
+	c.clipboardsHistory = limitAppend(c.config.MaxHistory, c.clipboardsHistory, newClipboard)
+	c.ClipboardsHistoryChannel <- c.clipboardsHistory
 }
 
 // IsReceivedDevice returns true if it's the same device with the received clipboard

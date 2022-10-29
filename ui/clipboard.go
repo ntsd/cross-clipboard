@@ -15,7 +15,7 @@ func (v *View) newClipboardBox() tview.Primitive {
 	cc := v.CrossClipboard
 
 	go func() {
-		for clipboards := range cc.ClipboardManager.ClipboardsChannel {
+		for clipboards := range cc.ClipboardManager.ClipboardsHistoryChannel {
 			hiddenText := cc.Config.HiddenText
 
 			table.Clear()

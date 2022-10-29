@@ -43,7 +43,7 @@ func main() {
 					log.Fatal(fmt.Errorf("fatal error: %w", fatalErr))
 				}
 				log.Println(fmt.Errorf("runtime error: %w", err))
-			case clipboards := <-crossClipboard.ClipboardManager.ClipboardsChannel:
+			case clipboards := <-crossClipboard.ClipboardManager.ClipboardsHistoryChannel:
 				_ = clipboards
 			case devices := <-crossClipboard.DeviceManager.DevicesChannel:
 				for _, dv := range devices {
