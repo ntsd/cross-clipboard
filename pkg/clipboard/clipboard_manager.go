@@ -68,11 +68,11 @@ func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
 }
 
 func (c *ClipboardManager) IsCurrentClipboardFromDevice(dv *device.Device) bool {
-	if c.currentClipboard != nil {
+	if c.currentClipboard == nil {
 		return false
 	}
 
-	if c.currentClipboard.Device != nil {
+	if c.currentClipboard.Device == nil {
 		return false
 	}
 
