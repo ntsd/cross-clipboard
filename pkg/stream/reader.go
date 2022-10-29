@@ -17,12 +17,12 @@ func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) 
 	s.sendDeviceData(dv)
 
 	// loop for incoming message
-exit:
+disconnect:
 	for {
 		dataSize, err := readDataSize(reader)
 		if err != nil {
 			s.errorChan <- xerror.NewRuntimeError("error reading data size").Wrap(err)
-			dv.Status = device.StatusError // TODO: handle peer exit to disconnect
+			dv.Status = device.StatusError
 			s.deviceManager.UpdateDevice(dv)
 			break
 		}
@@ -63,7 +63,7 @@ exit:
 			case SignalDisconnect:
 				dv.Status = device.StatusDisconnected
 				s.deviceManager.UpdateDevice(dv)
-				break exit
+				break disconnect
 			case SignalRequestDeviceData:
 				s.sendDeviceData(dv)
 			}
@@ -94,5 +94,11 @@ exit:
 			s.deviceManager.UpdateDevice(dv)
 		}
 	}
+
 	s.logChan <- fmt.Sprintf("ending read stream for peer: %s", dv.AddressInfo.ID.Pretty())
+
+	err := dv.Stream.Close()
+	if err != nil {
+		s.errorChan <- fmt.Errorf("can not close stream for peer %s: %w", dv.AddressInfo.ID, err)
+	}
 }

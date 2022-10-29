@@ -55,7 +55,9 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 	// send data to each devices
 	for name, dv := range s.deviceManager.Devices {
 		if dv.Status == device.StatusPending {
-			s.sendSignal(dv, SignalRequestDeviceData)
+			// request for public key
+			s.SendSignal(dv, SignalRequestDeviceData)
+			continue
 		}
 
 		if dv.Status != device.StatusConnected {
@@ -72,7 +74,6 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 			s.errorChan <- xerror.NewRuntimeErrorf("not found pgp encrypter for device %s", name)
 			dv.Status = device.StatusError
 			s.deviceManager.UpdateDevice(dv)
-			// todo request for public key
 			continue
 		}
 
@@ -119,8 +120,8 @@ func (s *StreamHandler) sendDeviceData(dv *device.Device) {
 	}
 }
 
-// sendSignal send signal to device
-func (s *StreamHandler) sendSignal(dv *device.Device, signal Signal) {
+// SendSignal send signal to device
+func (s *StreamHandler) SendSignal(dv *device.Device, signal Signal) {
 	signalData, err := s.encodeSignal(signal)
 	if err != nil {
 		s.errorChan <- xerror.NewRuntimeError("cannot encode signal").Wrap(err)
@@ -138,14 +139,12 @@ func (s *StreamHandler) sendSignal(dv *device.Device, signal Signal) {
 func (s *StreamHandler) writeData(w *bufio.Writer, data []byte) error {
 	_, err := w.Write(data)
 	if err != nil {
-		s.errorChan <- xerror.NewRuntimeError("error writing to buffer").Wrap(err)
-		return err
+		return xerror.NewRuntimeError("error writing to buffer").Wrap(err)
 	}
 
 	err = w.Flush()
 	if err != nil {
-		s.errorChan <- xerror.NewRuntimeError("error flushing buffer").Wrap(err)
-		return err
+		return xerror.NewRuntimeError("error flushing buffer").Wrap(err)
 	}
 	return nil
 }

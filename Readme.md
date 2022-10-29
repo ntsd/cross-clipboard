@@ -90,8 +90,6 @@ Generate a protobuf go file using protoc
 
 - Release binary file (Ongoing)
 - Publish to Homebrew and Deb package (Ongoing)
-- Handle disconnect and error (Ongoing)
 - Fix bug on this PNG image <https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100> (Ongoing)
-- Fix avoid sending data back to the peer it received from (Plan)
 - Auto start (Plan)
 - Unit testing (Plan)

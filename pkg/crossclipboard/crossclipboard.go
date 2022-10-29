@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -25,6 +26,8 @@ type CrossClipboard struct {
 
 	ClipboardManager *clipboard.ClipboardManager
 	DeviceManager    *devicemanager.DeviceManager
+
+	streamHandler *stream.StreamHandler
 
 	LogChan   chan string
 	ErrorChan chan error
@@ -78,6 +81,8 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 			cc.ErrorChan,
 			pgpDecrypter,
 		)
+		cc.streamHandler = streamHandler
+
 		// This function is called when a peer initiates a connection and starts a stream with this peer.
 		cc.Host.SetStreamHandler(stream.PROTOCAL_ID, streamHandler.HandleStream)
 		cc.LogChan <- fmt.Sprintf("[*] your multiaddress is: /ip4/%s/tcp/%v/p2p/%s", cc.Config.ListenHost, cc.Config.ListenPort, host.ID().Pretty())
@@ -128,7 +133,19 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 }
 
 func (cc *CrossClipboard) Stop() error {
-	// TODO: graceful exit, send disconnect signal, disconnect to all device
+	if cc.streamHandler != nil {
+		for id, dv := range cc.DeviceManager.Devices {
+			// graceful close connection stream
+			if dv.Status == device.StatusConnected {
+				log.Printf("ending stream for peer %s \n", id)
+
+				cc.streamHandler.SendSignal(dv, stream.SignalDisconnect)
+
+				dv.Stream.Close()
+			}
+		}
+	}
+
 	cc = nil
 	return nil
 }
