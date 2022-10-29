@@ -53,6 +53,8 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 	c.receivedClipboard = &newClipboard
 
+	c.AddClipboardToHistory(&newClipboard)
+
 	if newClipboard.IsImage {
 		clipboard.Write(clipboard.FmtImage, newClipboard.Data)
 		return
