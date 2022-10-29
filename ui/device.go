@@ -24,9 +24,9 @@ func (v *View) newDevicesBox() tview.Primitive {
 	cc := v.CrossClipboard
 
 	go func() {
-		for devices := range cc.DeviceManager.DevicesChannel {
+		for range cc.DeviceManager.DevicesUpdated {
 			table.Clear()
-			v.renderDevicesTable(table, devices)
+			v.renderDevicesTable(table, cc.DeviceManager.Devices)
 		}
 	}()
 

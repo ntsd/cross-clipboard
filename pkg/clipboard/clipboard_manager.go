@@ -15,8 +15,8 @@ type ClipboardManager struct {
 
 	ReadTextChannel          <-chan []byte
 	ReadImageChannel         <-chan []byte
-	clipboardsHistory        []*Clipboard
-	ClipboardsHistoryChannel chan []*Clipboard
+	ClipboardsHistory        []*Clipboard
+	ClipboardsHistoryUpdated chan struct{}
 	receivedClipboard        *Clipboard
 }
 
@@ -34,8 +34,8 @@ func NewClipboardManager(cfg *config.Config) *ClipboardManager {
 		config:                   cfg,
 		ReadTextChannel:          textCh,
 		ReadImageChannel:         imgCh,
-		ClipboardsHistoryChannel: make(chan []*Clipboard),
-		clipboardsHistory:        []*Clipboard{},
+		ClipboardsHistoryUpdated: make(chan struct{}),
+		ClipboardsHistory:        []*Clipboard{},
 	}
 }
 
@@ -62,8 +62,8 @@ func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 
 // AddClipboardToHistory add clipbaord to clipbaord history
 func (c *ClipboardManager) AddClipboardToHistory(newClipboard *Clipboard) {
-	c.clipboardsHistory = limitAppend(c.config.MaxHistory, c.clipboardsHistory, newClipboard)
-	c.ClipboardsHistoryChannel <- c.clipboardsHistory
+	c.ClipboardsHistory = limitAppend(c.config.MaxHistory, c.ClipboardsHistory, newClipboard)
+	c.ClipboardsHistoryUpdated <- struct{}{}
 }
 
 // IsReceivedDevice returns true if it's the same device with the received clipboard

@@ -15,17 +15,17 @@ import (
 // CreateWriteData handle clipboad channel and write to all peers and host
 func (s *StreamHandler) CreateWriteData() {
 	// waiting for clipboard data
-loop:
+readClipboardLoop:
 	for {
 		select {
 		case textBytes, ok := <-s.clipboardManager.ReadTextChannel:
 			if !ok {
-				break loop
+				break readClipboardLoop
 			}
 			s.sendClipboard(textBytes, false)
 		case imageBytes, ok := <-s.clipboardManager.ReadImageChannel:
 			if !ok {
-				break loop
+				break readClipboardLoop
 			}
 			s.sendClipboard(imageBytes, true)
 		}

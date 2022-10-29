@@ -7,7 +7,7 @@ import (
 
 type DeviceManager struct {
 	Devices        map[string]*device.Device
-	DevicesChannel chan map[string]*device.Device
+	DevicesUpdated chan struct{}
 
 	config *config.Config
 }
@@ -15,14 +15,14 @@ type DeviceManager struct {
 func NewDeviceManager(cfg *config.Config) *DeviceManager {
 	return &DeviceManager{
 		Devices:        make(map[string]*device.Device),
-		DevicesChannel: make(chan map[string]*device.Device),
+		DevicesUpdated: make(chan struct{}),
 		config:         cfg,
 	}
 }
 
 func (dm *DeviceManager) AddDevice(device *device.Device) {
 	dm.Devices[device.AddressInfo.ID.Pretty()] = device
-	dm.DevicesChannel <- dm.Devices
+	dm.DevicesUpdated <- struct{}{}
 }
 
 func (dm *DeviceManager) RemoveDevice(device *device.Device) {
@@ -30,7 +30,7 @@ func (dm *DeviceManager) RemoveDevice(device *device.Device) {
 	device.Writer.Flush()
 	device.Stream.Close()
 	delete(dm.Devices, device.AddressInfo.ID.Pretty())
-	dm.DevicesChannel <- dm.Devices
+	dm.DevicesUpdated <- struct{}{}
 }
 
 func (dm *DeviceManager) GetDevice(id string) *device.Device {
@@ -39,6 +39,6 @@ func (dm *DeviceManager) GetDevice(id string) *device.Device {
 
 func (dm *DeviceManager) UpdateDevice(device *device.Device) {
 	dm.Devices[device.AddressInfo.ID.Pretty()] = device
-	dm.DevicesChannel <- dm.Devices
+	dm.DevicesUpdated <- struct{}{}
 	dm.Save()
 }

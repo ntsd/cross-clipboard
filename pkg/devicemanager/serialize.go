@@ -61,7 +61,7 @@ func (dm *DeviceManager) Load() error {
 	}
 
 	dm.Devices = devices
-	dm.DevicesChannel <- dm.Devices
+	dm.DevicesUpdated <- struct{}{}
 
 	return nil
 }

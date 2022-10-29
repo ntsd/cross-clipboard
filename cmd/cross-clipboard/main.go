@@ -43,10 +43,10 @@ func main() {
 					log.Fatal(fmt.Errorf("fatal error: %w", fatalErr))
 				}
 				log.Println(fmt.Errorf("runtime error: %w", err))
-			case clipboards := <-crossClipboard.ClipboardManager.ClipboardsHistoryChannel:
-				_ = clipboards
-			case devices := <-crossClipboard.DeviceManager.DevicesChannel:
-				for _, dv := range devices {
+			case <-crossClipboard.ClipboardManager.ClipboardsHistoryUpdated:
+				// log.Printf("clipboard history updated, history size %d", len(crossClipboard.ClipboardManager.ClipboardsHistory))
+			case <-crossClipboard.DeviceManager.DevicesUpdated:
+				for _, dv := range crossClipboard.DeviceManager.Devices {
 					if dv.Status == device.StatusPending {
 						fmt.Printf("device %s wanted to connect (Y/n)", dv.Name)
 						var input string

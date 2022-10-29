@@ -15,10 +15,11 @@ func (v *View) newClipboardBox() tview.Primitive {
 	cc := v.CrossClipboard
 
 	go func() {
-		for clipboards := range cc.ClipboardManager.ClipboardsHistoryChannel {
+		for range cc.ClipboardManager.ClipboardsHistoryUpdated {
 			hiddenText := cc.Config.HiddenText
 
 			table.Clear()
+
 			table.SetCell(0, 0, tview.NewTableCell("time").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			table.SetCell(0, 1, tview.NewTableCell("size").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			table.SetCell(0, 2, tview.NewTableCell("type").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
@@ -26,7 +27,7 @@ func (v *View) newClipboardBox() tview.Primitive {
 				table.SetCell(0, 3, tview.NewTableCell("text").SetTextColor(tcell.ColorYellow).SetAlign(tview.AlignLeft))
 			}
 
-			for i, clipboard := range clipboards {
+			for i, clipboard := range cc.ClipboardManager.ClipboardsHistory {
 				row := i + 1
 				table.SetCell(row, 0, tview.NewTableCell(clipboard.Time.Format("15:04:05")))
 				table.SetCell(row, 1, tview.NewTableCell(strconv.FormatUint(uint64(clipboard.Size), 10)))
