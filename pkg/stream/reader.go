@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/ntsd/cross-clipboard/pkg/clipboard"
 	"github.com/ntsd/cross-clipboard/pkg/device"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
@@ -21,10 +22,17 @@ disconnect:
 	for {
 		dataSize, err := readDataSize(reader)
 		if err != nil {
+			if err == network.ErrReset { // error stream reset because it unusual stream end
+				s.errorChan <- xerror.NewRuntimeErrorf("peer %s stream reset", dv.AddressInfo.ID.Pretty()).Wrap(err)
+				dv.Status = device.StatusDisconnected
+				s.deviceManager.UpdateDevice(dv)
+				break disconnect
+			}
+
 			s.errorChan <- xerror.NewRuntimeError("error reading data size").Wrap(err)
 			dv.Status = device.StatusError
 			s.deviceManager.UpdateDevice(dv)
-			break
+			break disconnect
 		}
 
 		if dataSize <= 0 {
