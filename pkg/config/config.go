@@ -24,7 +24,7 @@ type Config struct {
 	ListenPort int    `mapstructure:"listen_port"`
 
 	// Clipbaord Config
-	MaxSize    int `mapstructure:"max_size"`    // limit clipboard size to send
+	MaxSize    int `mapstructure:"max_size"`    // limit clipboard size (bytes) to send
 	MaxHistory int `mapstructure:"max_history"` // limit number of clipboard history
 
 	// UI Config
@@ -93,7 +93,7 @@ func LoadConfig() (*Config, error) {
 	viper.SetDefault("listen_host", "0.0.0.0")
 	viper.SetDefault("listen_port", 4001)
 
-	viper.SetDefault("max_size", 16)
+	viper.SetDefault("max_size", 5<<20) // 5MB
 	viper.SetDefault("max_history", 10)
 
 	viper.SetDefault("hidden_text", true)

@@ -41,6 +41,11 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 		return
 	}
 
+	if clipboardLength > s.config.MaxSize {
+		s.errorChan <- xerror.NewRuntimeErrorf("clipboard size %d > config max size %d", clipboardLength, s.config.MaxSize)
+		return
+	}
+
 	cb := &clipboard.Clipboard{
 		IsImage: isImage,
 		Data:    clipboardBytes,

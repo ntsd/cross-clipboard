@@ -11,6 +11,8 @@ import (
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
 )
 
+const limitDataSize = 1 << 20 // data size to avoid to read (100 MB)
+
 // CreateReadData craete a new read streaming for host or peer
 func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) {
 	s.logChan <- fmt.Sprintf("sending device info and public key to %s", dv.AddressInfo.ID.Pretty())
@@ -36,10 +38,25 @@ disconnect:
 		}
 
 		if dataSize <= 0 {
-			s.errorChan <- xerror.NewRuntimeErrorf("data size < 0: %d", dataSize)
+			s.errorChan <- xerror.NewRuntimeErrorf("data size < 0, size %d", dataSize)
 			dv.Status = device.StatusError
 			s.deviceManager.UpdateDevice(dv)
-			break
+			break disconnect
+		}
+
+		// avoid to read big data from stream
+		if dataSize > limitDataSize {
+			s.errorChan <- xerror.NewRuntimeErrorf("data size %d > limit data size %d", dataSize, limitDataSize)
+			dv.Status = device.StatusBlocked
+			s.deviceManager.UpdateDevice(dv)
+			break disconnect
+		}
+
+		// skip clipboard size when data more than config max size
+		if dataSize > s.config.MaxSize {
+			s.errorChan <- xerror.NewRuntimeErrorf("data size %d > config max size %d", dataSize, s.config.MaxSize)
+			reader.Discard(dataSize)
+			continue
 		}
 
 		buffer := make([]byte, dataSize)
@@ -48,13 +65,13 @@ disconnect:
 			s.errorChan <- xerror.NewRuntimeError("error reading from buffer").Wrap(err)
 			dv.Status = device.StatusError
 			s.deviceManager.UpdateDevice(dv)
-			break
+			break disconnect
 		}
 		if readBytes != dataSize {
 			s.errorChan <- xerror.NewRuntimeErrorf("not reading full bytes read: %d size: %d", readBytes, dataSize)
 			dv.Status = device.StatusError
 			s.deviceManager.UpdateDevice(dv)
-			break
+			break disconnect
 		}
 
 		clipboardData, deviceData, signal, err := s.decodeData(buffer)
@@ -62,7 +79,7 @@ disconnect:
 			s.errorChan <- xerror.NewRuntimeError("error decoding data").Wrap(err)
 			dv.Status = device.StatusError
 			s.deviceManager.UpdateDevice(dv)
-			break
+			break disconnect
 		}
 
 		if signal != nil {

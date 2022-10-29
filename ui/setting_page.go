@@ -77,11 +77,11 @@ func (v *View) newSettingPage() *Page {
 
 	formItems = append(formItems, tview.NewInputField().
 		SetLabel("max size (MB)").
-		SetText(strconv.Itoa(v.CrossClipboard.Config.MaxSize)).
+		SetText(strconv.Itoa(v.CrossClipboard.Config.MaxSize>>20)).
 		SetFieldWidth(5).
 		SetAcceptanceFunc(numberValidator(3)).
 		SetChangedFunc(func(text string) {
-			cfg.MaxSize = unsafeStringToInt(text)
+			cfg.MaxSize = unsafeStringToInt(text) << 20
 			save(nil)
 		}))
 
