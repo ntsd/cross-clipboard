@@ -81,5 +81,9 @@ func (c *ClipboardManager) IsReceivedDevice(dv *device.Device) bool {
 
 // IsReceivedClipboard returns true if it's same clipboard data with the received clipboard
 func (c *ClipboardManager) IsReceivedClipboard(clipboardData []byte) bool {
+	if c.receivedClipboard == nil {
+		return false
+	}
+
 	return bytes.Equal(clipboardData, c.receivedClipboard.Data)
 }
