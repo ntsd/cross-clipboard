@@ -58,7 +58,7 @@ disconnect:
 		}
 
 		if signal != nil {
-			s.logChan <- fmt.Sprintf("received signal %v, peer: %s size: %d", signal, dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
+			s.logChan <- fmt.Sprintf("received signal %v, peer: %s", signal, dv.AddressInfo.ID.Pretty())
 			switch *signal {
 			case SignalDisconnect:
 				dv.Status = device.StatusDisconnected

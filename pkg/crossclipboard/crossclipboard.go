@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -135,12 +136,18 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 func (cc *CrossClipboard) Stop() error {
 	if cc.streamHandler != nil {
 		for id, dv := range cc.DeviceManager.Devices {
-			// graceful close connection stream
+			if dv.Status == device.StatusConnected {
+				log.Printf("sending disconneced signal to peer %s \n", id)
+				cc.streamHandler.SendSignal(dv, stream.SignalDisconnect)
+			}
+		}
+
+		// sleep to wait sending disconnect signal
+		time.Sleep(time.Second)
+
+		for id, dv := range cc.DeviceManager.Devices {
 			if dv.Status == device.StatusConnected {
 				log.Printf("ending stream for peer %s \n", id)
-
-				cc.streamHandler.SendSignal(dv, stream.SignalDisconnect)
-
 				dv.Stream.Close()
 			}
 		}
