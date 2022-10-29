@@ -1,11 +1,11 @@
 run:
-	go run ./cmd/cross-clipboard/main.go
+	go run ./main.go
 
 run-terminal:
-	go run ./cmd/cross-clipboard/main.go -t
+	go run ./main.go -t
 
 build:
-	go build ./cmd/cross-clipboard/main.go
+	go build .
 
 bind-android:
 	gomobile bind -target=android ./mobile/...

@@ -29,7 +29,7 @@ A multi device clipboard sharing over P2P network.
 for Go user you can just install using go package
 
 ```shell
-go install github.com/ntsd/cross-clipboard/cmd/cross-clipboard@latest
+go install github.com/ntsd/cross-clipboard@latest
 ```
 
 ### Headless Linux
@@ -59,14 +59,14 @@ Terminal mode
 
 ```shell
 git clone https://github.com/ntsd/cross-clipboard
-go run cmd/cross-clipboard/main.go
+go run main.go
 ```
 
 ## Build
 
 ### Build Desktop
 
-`go build cmd/cross-clipboard/main.go`
+`go build .`
 
 ### Build Mobile (Plan)
 
