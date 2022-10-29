@@ -9,7 +9,7 @@ import (
 // decodeData decode message data to protobuf type `| data size (int 4 bytes) | data type (enum 1 byte) | protobuf message (struct n bytes) |`
 func (s *StreamHandler) decodeData(bytes []byte) (*protobuf.ClipboardData, *protobuf.DeviceData, *Signal, error) {
 	length := len(bytes)
-	if length <= 1 {
+	if length <= 0 {
 		return nil, nil, nil, xerror.NewRuntimeErrorf("data length <= 0: %d", length)
 	}
 
