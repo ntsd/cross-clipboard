@@ -1,6 +1,7 @@
 package clipboard
 
 import (
+	"bytes"
 	"context"
 
 	"github.com/ntsd/cross-clipboard/pkg/config"
@@ -65,7 +66,8 @@ func (c *ClipboardManager) UpdateClipboard(newClipboard Clipboard) {
 	c.ClipboardsChannel <- c.clipboards
 }
 
-func (c *ClipboardManager) IsReceivedClipboardFromDevice(dv *device.Device) bool {
+// IsReceivedDevice returns true if it's the same device with the received clipboard
+func (c *ClipboardManager) IsReceivedDevice(dv *device.Device) bool {
 	if c.receivedClipboard == nil {
 		return false
 	}
@@ -75,4 +77,9 @@ func (c *ClipboardManager) IsReceivedClipboardFromDevice(dv *device.Device) bool
 	}
 
 	return c.receivedClipboard.Device.AddressInfo.ID.Pretty() == dv.AddressInfo.ID.Pretty()
+}
+
+// IsReceivedClipboard returns true if it's same clipboard data with the received clipboard
+func (c *ClipboardManager) IsReceivedClipboard(clipboardData []byte) bool {
+	return bytes.Equal(clipboardData, c.receivedClipboard.Data)
 }
