@@ -41,14 +41,15 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 		return
 	}
 
-	isReceivedClipboard := s.clipboardManager.IsReceivedClipboard(clipboardBytes)
-
 	cb := clipboard.Clipboard{
 		IsImage: isImage,
 		Data:    clipboardBytes,
 		Size:    uint32(clipboardLength),
 		Time:    time.Now(),
 	}
+	s.clipboardManager.UpdateClipboard(cb)
+
+	isReceivedClipboard := s.clipboardManager.IsReceivedClipboard(clipboardBytes)
 	clipboardData := cb.ToProtobuf()
 
 	// send data to each devices
@@ -92,8 +93,6 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 			s.deviceManager.UpdateDevice(dv)
 		}
 	}
-
-	s.clipboardManager.UpdateClipboard(cb)
 }
 
 // sendDeviceData send device data to the giving device

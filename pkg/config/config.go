@@ -83,7 +83,7 @@ func LoadConfig() (*Config, error) {
 
 	dotPath := stringutil.JoinURL(thisUser.HomeDir, configDirName)
 	// make directory if not exists
-	os.Mkdir(dotPath, os.ModeDir)
+	os.MkdirAll(dotPath, 0777)
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
