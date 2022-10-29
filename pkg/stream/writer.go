@@ -62,7 +62,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 		}
 
 		// avoid sending back to where it received
-		if s.clipboardManager.IsCurrentClipboardFromDevice(dv) {
+		if s.clipboardManager.IsReceivedClipboardFromDevice(dv) {
 			continue
 		}
 
@@ -92,7 +92,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 		}
 	}
 
-	s.clipboardManager.AddClipboard(cb)
+	s.clipboardManager.UpdateClipboard(cb)
 }
 
 // sendDeviceData send device data to the giving device

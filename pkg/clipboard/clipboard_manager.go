@@ -14,9 +14,9 @@ type ClipboardManager struct {
 
 	ReadTextChannel   <-chan []byte
 	ReadImageChannel  <-chan []byte
-	Clipboards        []Clipboard
+	clipboards        []Clipboard
 	ClipboardsChannel chan []Clipboard
-	currentClipboard  *Clipboard
+	receivedClipboard *Clipboard
 }
 
 // NewClipboardManager create new clipbaord manager
@@ -34,7 +34,7 @@ func NewClipboardManager(cfg *config.Config) *ClipboardManager {
 		ReadTextChannel:   textCh,
 		ReadImageChannel:  imgCh,
 		ClipboardsChannel: make(chan []Clipboard),
-		Clipboards:        []Clipboard{},
+		clipboards:        []Clipboard{},
 	}
 }
 
@@ -50,7 +50,7 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 
 // WriteClipboard write os clipbaord
 func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
-	c.currentClipboard = &newClipboard
+	c.receivedClipboard = &newClipboard
 
 	if newClipboard.IsImage {
 		clipboard.Write(clipboard.FmtImage, newClipboard.Data)
@@ -59,22 +59,20 @@ func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
 	clipboard.Write(clipboard.FmtText, newClipboard.Data)
 }
 
-// AddClipboard add clipbaord to clipbaord history
-func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
-	c.currentClipboard = &newClipboard
-
-	c.Clipboards = limitAppend(c.config.MaxHistory, c.Clipboards, newClipboard)
-	c.ClipboardsChannel <- c.Clipboards
+// UpdateClipboard add clipbaord to clipbaord history
+func (c *ClipboardManager) UpdateClipboard(newClipboard Clipboard) {
+	c.clipboards = limitAppend(c.config.MaxHistory, c.clipboards, newClipboard)
+	c.ClipboardsChannel <- c.clipboards
 }
 
-func (c *ClipboardManager) IsCurrentClipboardFromDevice(dv *device.Device) bool {
-	if c.currentClipboard == nil {
+func (c *ClipboardManager) IsReceivedClipboardFromDevice(dv *device.Device) bool {
+	if c.receivedClipboard == nil {
 		return false
 	}
 
-	if c.currentClipboard.Device == nil {
+	if c.receivedClipboard.Device == nil {
 		return false
 	}
 
-	return c.currentClipboard.Device.AddressInfo.ID.Pretty() == dv.AddressInfo.ID.Pretty()
+	return c.receivedClipboard.Device.AddressInfo.ID.Pretty() == dv.AddressInfo.ID.Pretty()
 }
