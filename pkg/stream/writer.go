@@ -41,17 +41,12 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 		return
 	}
 
-	now := time.Now()
-
 	cb := clipboard.Clipboard{
 		IsImage: isImage,
 		Data:    clipboardBytes,
 		Size:    uint32(clipboardLength),
-		Time:    now,
+		Time:    time.Now(),
 	}
-
-	// set current clipbaord to avoid recursive
-	s.clipboardManager.AddClipboard(cb)
 
 	clipboardData := cb.ToProtobuf()
 
@@ -63,6 +58,11 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 
 		if dv.Status != device.StatusConnected {
 			// skip disconnected devices
+			continue
+		}
+
+		// avoid sending back to where it received
+		if s.clipboardManager.IscurrentClipboardFromDevice(dv) {
 			continue
 		}
 
@@ -91,6 +91,8 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 			s.deviceManager.UpdateDevice(dv)
 		}
 	}
+
+	s.clipboardManager.AddClipboard(cb)
 }
 
 // sendDeviceData send device data to the giving device

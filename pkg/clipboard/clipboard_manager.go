@@ -1,10 +1,10 @@
 package clipboard
 
 import (
-	"bytes"
 	"context"
 
 	"github.com/ntsd/cross-clipboard/pkg/config"
+	"github.com/ntsd/cross-clipboard/pkg/device"
 	"golang.design/x/clipboard"
 )
 
@@ -16,7 +16,7 @@ type ClipboardManager struct {
 	ReadImageChannel  <-chan []byte
 	Clipboards        []Clipboard
 	ClipboardsChannel chan []Clipboard
-	CurrentClipboard  []byte
+	currentClipboard  *Clipboard
 }
 
 // NewClipboardManager create new clipbaord manager
@@ -50,21 +50,25 @@ func limitAppend[T any](limit int, slice []T, new T) []T {
 
 // WriteClipboard write os clipbaord
 func (c *ClipboardManager) WriteClipboard(newClipboard Clipboard) {
-	if bytes.Compare(c.CurrentClipboard, newClipboard.Data) != 0 {
-		// TODO avoid clipboard read channel after write by this
-		if newClipboard.IsImage {
-			clipboard.Write(clipboard.FmtImage, newClipboard.Data)
-			return
-		}
-		clipboard.Write(clipboard.FmtText, newClipboard.Data)
+	c.currentClipboard = &newClipboard
+
+	if newClipboard.IsImage {
+		clipboard.Write(clipboard.FmtImage, newClipboard.Data)
+		return
 	}
+	clipboard.Write(clipboard.FmtText, newClipboard.Data)
 }
 
 // AddClipboard add clipbaord to clipbaord history
 func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
-	if bytes.Compare(c.CurrentClipboard, newClipboard.Data) != 0 {
-		c.CurrentClipboard = newClipboard.Data
-		c.Clipboards = limitAppend(c.config.MaxHistory, c.Clipboards, newClipboard)
-		c.ClipboardsChannel <- c.Clipboards
-	}
+	c.currentClipboard = &newClipboard
+
+	c.Clipboards = limitAppend(c.config.MaxHistory, c.Clipboards, newClipboard)
+	c.ClipboardsChannel <- c.Clipboards
+}
+
+func (c *ClipboardManager) IscurrentClipboardFromDevice(dv *device.Device) bool {
+	return c.currentClipboard != nil &&
+		c.currentClipboard.Device != nil &&
+		c.currentClipboard.Device.AddressInfo.ID.Pretty() == dv.AddressInfo.ID.Pretty()
 }
