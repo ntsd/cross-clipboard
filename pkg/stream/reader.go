@@ -107,6 +107,9 @@ disconnect:
 
 	err := dv.Stream.Close()
 	if err != nil {
+		if err == network.ErrReset { // check stream already reset
+			s.logChan <- fmt.Sprintf("peer %s stream already reset", dv.AddressInfo.ID.Pretty())
+		}
 		s.errorChan <- fmt.Errorf("can not close stream for peer %s: %w", dv.AddressInfo.ID, err)
 	}
 }
