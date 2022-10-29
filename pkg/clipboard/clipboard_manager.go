@@ -67,8 +67,14 @@ func (c *ClipboardManager) AddClipboard(newClipboard Clipboard) {
 	c.ClipboardsChannel <- c.Clipboards
 }
 
-func (c *ClipboardManager) IscurrentClipboardFromDevice(dv *device.Device) bool {
-	return c.currentClipboard != nil &&
-		c.currentClipboard.Device != nil &&
-		c.currentClipboard.Device.AddressInfo.ID.Pretty() == dv.AddressInfo.ID.Pretty()
+func (c *ClipboardManager) IsCurrentClipboardFromDevice(dv *device.Device) bool {
+	if c.currentClipboard != nil {
+		return false
+	}
+
+	if c.currentClipboard.Device != nil {
+		return false
+	}
+
+	return c.currentClipboard.Device.AddressInfo.ID.Pretty() == dv.AddressInfo.ID.Pretty()
 }

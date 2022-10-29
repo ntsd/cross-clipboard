@@ -62,7 +62,7 @@ func (s *StreamHandler) sendClipboard(clipboardBytes []byte, isImage bool) {
 		}
 
 		// avoid sending back to where it received
-		if s.clipboardManager.IscurrentClipboardFromDevice(dv) {
+		if s.clipboardManager.IsCurrentClipboardFromDevice(dv) {
 			continue
 		}
 

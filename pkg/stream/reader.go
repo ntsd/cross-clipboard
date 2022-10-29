@@ -71,7 +71,7 @@ exit:
 
 		if clipboardData != nil {
 			s.logChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
-			s.clipboardManager.WriteClipboard(clipboard.FromProtobuf(clipboardData))
+			s.clipboardManager.WriteClipboard(clipboard.FromProtobuf(clipboardData, dv))
 		}
 
 		if deviceData != nil {

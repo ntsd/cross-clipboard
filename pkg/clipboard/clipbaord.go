@@ -27,11 +27,12 @@ func (c Clipboard) ToProtobuf() *protobuf.ClipboardData {
 }
 
 // FromProtobuf convert protobuf.ClipboardData to Clipboard struct
-func FromProtobuf(cd *protobuf.ClipboardData) Clipboard {
+func FromProtobuf(cd *protobuf.ClipboardData, dv *device.Device) Clipboard {
 	return Clipboard{
 		IsImage: cd.IsImage,
 		Data:    cd.Data,
 		Size:    cd.DataSize,
 		Time:    time.UnixMicro(cd.Time),
+		Device:  dv,
 	}
 }
