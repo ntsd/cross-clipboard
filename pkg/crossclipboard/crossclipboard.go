@@ -106,10 +106,23 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 					continue
 				}
 
-				cc.LogChan <- fmt.Sprintf("connecting to peer host: %s", peerInfo)
+				cc.LogChan <- fmt.Sprintf("connecting to peer: %s", peerInfo.ID.Pretty())
 
-				if err := cc.Host.Connect(ctx, peerInfo); err != nil {
-					cc.ErrorChan <- xerror.NewRuntimeError("connect error").Wrap(err)
+				retry := 1
+				for ; retry < 5; retry++ { // retry to connect
+					if err := cc.Host.Connect(ctx, peerInfo); err != nil {
+						cc.ErrorChan <- xerror.NewRuntimeErrorf(
+							"error to connect to peer %s, retrying %d",
+							peerInfo.ID.Pretty(),
+							retry,
+						).Wrap(err)
+						time.Sleep(time.Duration(retry*10) * time.Second)
+						continue
+					}
+					break
+				}
+				if retry == 5 {
+					cc.ErrorChan <- xerror.NewRuntimeErrorf("error to connect to peer %d", peerInfo.ID.Pretty())
 					continue
 				}
 
@@ -164,6 +177,11 @@ func (cc *CrossClipboard) Stop() error {
 	}
 
 	cc.stopDiscovery <- struct{}{}
+
+	err := cc.Host.Close()
+	if err != nil {
+		return xerror.NewFatalError("unable to close host").Wrap(err)
+	}
 
 	return nil
 }
