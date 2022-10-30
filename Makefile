@@ -7,6 +7,9 @@ run-terminal:
 build:
 	go build .
 
+release:
+	goreleaser release --rm-dist --snapshot
+
 bind-android:
 	gomobile bind -target=android ./mobile/...
 

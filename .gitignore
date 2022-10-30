@@ -8,3 +8,6 @@
 # config
 config.yaml
 devices.json
+
+# go releaser
+dist/

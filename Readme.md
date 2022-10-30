@@ -13,7 +13,7 @@ A multi device clipboard sharing over P2P network.
 - Multicast DNS (Done) - discover a device in the same network
 - E2E encryption (Done) - encrypt the clipboard data using OpenPGP
 - Cross-platform desktop (Done) - support Windows, Linux, and Darwin (macOS)
-- Terminal GUI (Ongoing) - terminal user interface for the end user
+- Terminal GUI (Done) - terminal user interface for the end user
 - Cross-platform mobile (Plan) - support iOS and Android
 
 ## Libraries 
@@ -30,6 +30,13 @@ for Go user you can just install using go package
 
 ```shell
 go install github.com/ntsd/cross-clipboard@latest
+```
+
+### Homebrew tap install
+
+```shell
+brew tap ntsd/cross-clipboard
+brew install cross-clipboard
 ```
 
 ### Headless Linux
@@ -88,8 +95,6 @@ Generate a protobuf go file using protoc
 
 ## TODO
 
-- Release binary file (Ongoing)
-- Publish to Homebrew and Deb package (Ongoing)
+- Publish to Deb package (Ongoing)
 - Fix bug on this PNG image <https://mdg.imgix.net/assets/images/tux.png?auto=format&fit=clip&q=40&w=100> (Ongoing)
-- Auto start (Plan)
 - Unit testing (Plan)
