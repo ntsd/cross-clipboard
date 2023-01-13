@@ -6,7 +6,7 @@ import (
 	"os/user"
 
 	gopenpgp "github.com/ProtonMail/gopenpgp/v2/crypto"
-	p2pcrypto "github.com/libp2p/go-libp2p-core/crypto"
+	p2pcrypto "github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/crypto"
 	"github.com/ntsd/cross-clipboard/pkg/xerror"
 	"github.com/ntsd/go-utils/pkg/maputil"
