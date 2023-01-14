@@ -11,16 +11,10 @@ release:
 	goreleaser release --rm-dist --snapshot
 
 bind-android:
-	gomobile bind -target=android ./mobile/...
-
-build-mobile:
-	gomobile build ./mobile/...
-
-run-mobile:
-	gomobile install ./mobile/...
-
+	ebitenmobile bind -target android -javapkg dev.ntsd.crossclipboard -o ./mobile/dist/cross-clipboard.aar ./mobile/.
+	
 android-log:
-	adb logcat | grep GoLog
+	adb logcat -c && adb logcat | grep GoLog
 
 protogen:
 	cd ./pkg/protobuf && protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative data.proto

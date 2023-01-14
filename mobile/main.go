@@ -1,50 +1,32 @@
-//go:build darwin || linux || windows
-// +build darwin linux windows
-
-// Copyright 2014 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-// An app that draws a green triangle on a red background.
-//
-// In order to build this program as an Android APK, using the gomobile tool.
-//
-// See http://godoc.org/golang.org/x/mobile/cmd/gomobile to install gomobile.
-//
-// Get the basic example and use gomobile to build or install it on your device.
-//
-//	$ go get -d golang.org/x/mobile/example/basic
-//	$ gomobile build golang.org/x/mobile/example/basic # will build an APK
-//
-//	# plug your Android device to your computer or start an Android emulator.
-//	# if you have adb installed on your machine, use gomobile install to
-//	# build and deploy the APK to an Android target.
-//	$ gomobile install golang.org/x/mobile/example/basic
-//
-// Switch to your device or emulator to start the Basic application from
-// the launcher.
-// You can also run the application on your desktop by running the command
-// below. (Note: It currently doesn't work on Windows.)
-//
-//	$ go install golang.org/x/mobile/example/basic && basic
 package mobile
 
 import (
+	"log"
+
+	"github.com/hajimehoshi/ebiten/mobile"
+	"github.com/ntsd/cross-clipboard/mobile/gui"
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
 )
 
-type CrossClipbardMobile struct {
-}
-
-func (c *CrossClipbardMobile) Start() {
-	cfg := &config.Config{
-		GroupName:  "default",
-		ListenHost: "0.0.0.0",
-		ListenPort: 4001,
+func init() {
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
 	}
+	// cfg := &config.Config{
+	// 	GroupName:  "default",
+	// 	ListenHost: "0.0.0.0",
+	// 	ListenPort: 4001,
+	// }
 	crossclipboard.NewCrossClipboard(cfg)
+
+	g := gui.NewGUI()
+	mobile.SetGame(g)
 }
 
-func NewCrossClipbardMobile() *CrossClipbardMobile {
-	return &CrossClipbardMobile{}
-}
+// Dummy is a dummy exported function.
+//
+// gomobile doesn't compile a package that doesn't include any exported function.
+// Dummy forces gomobile to compile this package.
+func Dummy() {}
