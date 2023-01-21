@@ -5,16 +5,13 @@ go 1.18
 require (
 	github.com/ProtonMail/gopenpgp/v2 v2.4.10
 	github.com/gdamore/tcell/v2 v2.4.1-0.20210905002822-f057f0a857a1
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/hajimehoshi/ebiten v1.12.12
+	github.com/hajimehoshi/ebiten/v2 v2.4.16
 	github.com/libp2p/go-libp2p v0.24.2
 	github.com/multiformats/go-multiaddr v0.8.0
 	github.com/ntsd/go-utils v0.0.0-20221002000426-fd4acd2afaa5
 	github.com/rivo/tview v0.0.0-20220307222120-9994674d60a8
 	github.com/spf13/viper v1.12.0
-	github.com/udhos/pixfont v0.0.0-20170821042751-cf49ba5e073f
 	golang.design/x/clipboard v0.6.2
-	golang.org/x/mobile v0.0.0-20220504144722-50dca8fc073d
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -23,11 +20,14 @@ require (
 	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
 	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
+	github.com/ebitengine/purego v0.0.0-20220905075623-aeed57cda744 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
-	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2 // indirect
+	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20220806181222-55e207c401ad // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/google/pprof v0.0.0-20221203041831-ce31453925ec // indirect
+	github.com/hajimehoshi/file2byteslice v0.0.0-20210813153925-5340248a8f41 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/jezek/xgb v1.0.1 // indirect
 	github.com/libp2p/go-yamux/v4 v4.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
@@ -48,6 +48,7 @@ require (
 	go.uber.org/dig v1.15.0 // indirect
 	go.uber.org/fx v1.18.2 // indirect
 	golang.org/x/exp/shiny v0.0.0-20230111222715-75897c7a292a // indirect
+	golang.org/x/mobile v0.0.0-20220722155234-aaac322e2105 // indirect
 	golang.org/x/term v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
@@ -125,7 +126,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
 	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db // indirect
-	golang.org/x/image v0.0.0-20211028202545-6944b10bf410
+	golang.org/x/image v0.1.0 // indirect
 	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/net v0.3.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect

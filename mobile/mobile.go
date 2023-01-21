@@ -3,7 +3,7 @@ package mobile
 import (
 	"log"
 
-	"github.com/hajimehoshi/ebiten/mobile"
+	"github.com/hajimehoshi/ebiten/v2/mobile"
 	"github.com/ntsd/cross-clipboard/mobile/gui"
 	"github.com/ntsd/cross-clipboard/pkg/config"
 	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
@@ -14,14 +14,13 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// cfg := &config.Config{
-	// 	GroupName:  "default",
-	// 	ListenHost: "0.0.0.0",
-	// 	ListenPort: 4001,
-	// }
-	crossclipboard.NewCrossClipboard(cfg)
 
-	g := gui.NewGUI()
+	cc, err := crossclipboard.NewCrossClipboard(cfg)
+	if err != nil || cc == nil {
+		log.Fatal(err)
+	}
+
+	g := gui.NewGUI(*cc)
 	mobile.SetGame(g)
 }
 

@@ -23,6 +23,8 @@ builds:
     skip: false
     goos:
       - linux
+    env:
+      - CGO_ENABLED=1
     goarch:
       - amd64
       - arm64

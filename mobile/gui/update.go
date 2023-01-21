@@ -1,7 +1,5 @@
 package gui
 
-import "github.com/hajimehoshi/ebiten"
-
-func (g *GUI) Update(screen *ebiten.Image) error {
+func (g *GUI) Update() error {
 	return nil
 }
