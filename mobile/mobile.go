@@ -3,6 +3,7 @@ package mobile
 import (
 	"log"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/mobile"
 	"github.com/ntsd/cross-clipboard/mobile/gui"
 	"github.com/ntsd/cross-clipboard/pkg/config"
@@ -10,6 +11,8 @@ import (
 )
 
 func init() {
+	ebiten.SetWindowTitle("Cross Clipboard (Beta)")
+
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -21,6 +24,7 @@ func init() {
 	}
 
 	g := gui.NewGUI(*cc)
+
 	mobile.SetGame(g)
 }
 

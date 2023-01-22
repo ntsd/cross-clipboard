@@ -10,6 +10,12 @@ import (
 type GUI struct {
 	size image.Point
 
+	// gui
+	runes   []rune
+	text    string
+	counter int
+
+	// cross clipboard
 	cc crossclipboard.CrossClipboard
 }
 

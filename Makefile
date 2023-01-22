@@ -11,7 +11,7 @@ release:
 	goreleaser release --rm-dist --snapshot
 
 bind-android:
-	ebitenmobile bind -target android -javapkg dev.ntsd.crossclipboard -o ./mobile/dist/cross-clipboard.aar ./mobile/.
+	ebitenmobile bind -target android -javapkg dev.ntsd.crossclipboard -o ./mobile/android/app/libs/cross-clipboard.aar ./mobile/.
 	
 android-log:
 	adb logcat -c && adb logcat | grep GoLog
