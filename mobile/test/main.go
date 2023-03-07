@@ -5,24 +5,13 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/ntsd/cross-clipboard/mobile/gui"
-	"github.com/ntsd/cross-clipboard/pkg/config"
-	"github.com/ntsd/cross-clipboard/pkg/crossclipboard"
 )
 
 func main() {
 	ebiten.SetWindowTitle("Cross Clipboard (Test)")
+	ebiten.SetWindowSize(360, 800)
 
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cc, err := crossclipboard.NewCrossClipboard(cfg)
-	if err != nil || cc == nil {
-		log.Fatal(err)
-	}
-
-	g := gui.NewGUI(*cc)
+	g := gui.NewGUI()
 
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)

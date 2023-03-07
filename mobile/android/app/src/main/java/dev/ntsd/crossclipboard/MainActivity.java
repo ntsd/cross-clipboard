@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private EbitenView getEbitenView() {
-        return (EbitenView)this.findViewById(R.id.ebitenview);
+        return this.findViewById(R.id.ebitenview);
     }
 
     @Override
