@@ -1,11 +1,9 @@
 package gui
 
 import (
-	"image/color"
 	"sort"
 
 	"github.com/ebitenui/ebitenui"
-	"github.com/ebitenui/ebitenui/image"
 	"github.com/ebitenui/ebitenui/widget"
 	"golang.org/x/text/collate"
 	"golang.org/x/text/language"
@@ -107,19 +105,10 @@ func demoContainer(res *uiResources, ui func() *ebitenui.UI) widget.PreferredSiz
 		)))
 
 	pages := []interface{}{
-		buttonPage(res),
-		checkboxPage(res),
-		listPage(res),
-		comboButtonPage(res),
-		gridLayoutPage(res),
-		rowLayoutPage(res),
-		sliderPage(res),
-		textInputPage(res),
-		radioGroupPage(res),
-		windowPage(res, ui),
-		anchorLayoutPage(res),
-		textAreaPage(res),
-		progressBarPage(res),
+		clipboardsPage(res),
+		devicesPage(res),
+		settingPage(res),
+		logPage(res),
 	}
 
 	collator := collate.New(language.English)
@@ -195,20 +184,6 @@ func (p *pageContainer) setPage(page *page) {
 	p.flipBook.RequestRelayout()
 }
 
-func newCheckbox(label string, changedHandler widget.CheckboxChangedHandlerFunc, res *uiResources) *widget.LabeledCheckbox {
-	return widget.NewLabeledCheckbox(
-		widget.LabeledCheckboxOpts.Spacing(res.checkbox.spacing),
-		widget.LabeledCheckboxOpts.CheckboxOpts(
-			widget.CheckboxOpts.ButtonOpts(widget.ButtonOpts.Image(res.checkbox.image)),
-			widget.CheckboxOpts.Image(res.checkbox.graphic),
-			widget.CheckboxOpts.StateChangedHandler(func(args *widget.CheckboxChangedEventArgs) {
-				if changedHandler != nil {
-					changedHandler(args)
-				}
-			})),
-		widget.LabeledCheckboxOpts.LabelOpts(widget.LabelOpts.Text(label, res.label.face, res.label.text)))
-}
-
 func newPageContentContainer() *widget.Container {
 	return widget.NewContainer(
 		widget.ContainerOpts.WidgetOpts(widget.WidgetOpts.LayoutData(widget.AnchorLayoutData{
@@ -218,91 +193,4 @@ func newPageContentContainer() *widget.Container {
 			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
 			widget.RowLayoutOpts.Spacing(10),
 		)))
-}
-
-func newListComboButton(entries []interface{}, buttonLabel widget.SelectComboButtonEntryLabelFunc, entryLabel widget.ListEntryLabelFunc,
-	entrySelectedHandler widget.ListComboButtonEntrySelectedHandlerFunc, res *uiResources) *widget.ListComboButton {
-
-	return widget.NewListComboButton(
-		widget.ListComboButtonOpts.SelectComboButtonOpts(
-			widget.SelectComboButtonOpts.ComboButtonOpts(
-				widget.ComboButtonOpts.ButtonOpts(
-					widget.ButtonOpts.Image(res.comboButton.image),
-					widget.ButtonOpts.TextPadding(res.comboButton.padding),
-				),
-			),
-		),
-		widget.ListComboButtonOpts.Text(res.comboButton.face, res.comboButton.graphic, res.comboButton.text),
-		widget.ListComboButtonOpts.ListOpts(
-			widget.ListOpts.Entries(entries),
-			widget.ListOpts.ScrollContainerOpts(
-				widget.ScrollContainerOpts.Image(res.list.image),
-			),
-			widget.ListOpts.SliderOpts(
-				widget.SliderOpts.Images(res.list.track, res.list.handle),
-				widget.SliderOpts.MinHandleSize(res.list.handleSize),
-				widget.SliderOpts.TrackPadding(res.list.trackPadding)),
-			widget.ListOpts.EntryFontFace(res.list.face),
-			widget.ListOpts.EntryColor(res.list.entry),
-			widget.ListOpts.EntryTextPadding(res.list.entryPadding),
-		),
-		widget.ListComboButtonOpts.EntryLabelFunc(buttonLabel, entryLabel),
-		widget.ListComboButtonOpts.EntrySelectedHandler(entrySelectedHandler))
-}
-
-func newList(entries []interface{}, res *uiResources, widgetOpts ...widget.WidgetOpt) *widget.List {
-	return widget.NewList(
-		widget.ListOpts.ContainerOpts(widget.ContainerOpts.WidgetOpts(widgetOpts...)),
-		widget.ListOpts.ScrollContainerOpts(widget.ScrollContainerOpts.Image(res.list.image)),
-		widget.ListOpts.SliderOpts(
-			widget.SliderOpts.Images(res.list.track, res.list.handle),
-			widget.SliderOpts.MinHandleSize(res.list.handleSize),
-			widget.SliderOpts.TrackPadding(res.list.trackPadding),
-		),
-		widget.ListOpts.HideHorizontalSlider(),
-		widget.ListOpts.Entries(entries),
-		widget.ListOpts.EntryLabelFunc(func(e interface{}) string {
-			return e.(string)
-		}),
-		widget.ListOpts.EntryFontFace(res.list.face),
-		widget.ListOpts.EntryColor(res.list.entry),
-		widget.ListOpts.EntryTextPadding(res.list.entryPadding),
-	)
-}
-func newTextArea(text string, res *uiResources, widgetOpts ...widget.WidgetOpt) *widget.TextArea {
-	return widget.NewTextArea(
-		widget.TextAreaOpts.ContainerOpts(widget.ContainerOpts.WidgetOpts(widgetOpts...)),
-		widget.TextAreaOpts.ScrollContainerOpts(widget.ScrollContainerOpts.Image(res.list.image)),
-		widget.TextAreaOpts.SliderOpts(
-			widget.SliderOpts.Images(res.list.track, res.list.handle),
-			widget.SliderOpts.MinHandleSize(res.list.handleSize),
-			widget.SliderOpts.TrackPadding(res.list.trackPadding),
-		),
-
-		widget.TextAreaOpts.FontFace(res.textArea.face),
-		widget.TextAreaOpts.FontColor(color.RGBA{R: 200, G: 100, B: 0, A: 255}),
-		widget.TextAreaOpts.TextPadding(res.textArea.entryPadding),
-		widget.TextAreaOpts.Text(text),
-	)
-}
-
-func newSeparator(res *uiResources, ld interface{}) widget.PreferredSizeLocateableWidget {
-	c := widget.NewContainer(
-		widget.ContainerOpts.Layout(widget.NewRowLayout(
-			widget.RowLayoutOpts.Direction(widget.DirectionVertical),
-			widget.RowLayoutOpts.Padding(widget.Insets{
-				Top:    20,
-				Bottom: 20,
-			}))),
-		widget.ContainerOpts.WidgetOpts(widget.WidgetOpts.LayoutData(ld)))
-
-	c.AddChild(widget.NewGraphic(
-		widget.GraphicOpts.WidgetOpts(widget.WidgetOpts.LayoutData(widget.RowLayoutData{
-			Stretch:   true,
-			MaxHeight: 2,
-		})),
-		widget.GraphicOpts.ImageNineSlice(image.NewNineSliceColor(res.separatorColor)),
-	))
-
-	return c
 }
