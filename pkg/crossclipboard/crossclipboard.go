@@ -122,7 +122,7 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 					break
 				}
 				if retry == 5 {
-					cc.ErrorChan <- xerror.NewRuntimeErrorf("error to connect to peer %d", peerInfo.ID.Pretty())
+					cc.ErrorChan <- xerror.NewRuntimeErrorf("error to connect to peer %s", peerInfo.ID.Pretty())
 					continue
 				}
 
