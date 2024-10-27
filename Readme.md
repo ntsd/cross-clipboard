@@ -29,6 +29,8 @@ A multi device clipboard sharing over P2P network.
 
 for Go user you can just install using go package
 
+Required: Go 1.23 or above
+
 ```shell
 go install github.com/ntsd/cross-clipboard@latest
 ```

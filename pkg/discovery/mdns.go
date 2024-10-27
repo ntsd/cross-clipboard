@@ -19,7 +19,7 @@ type DiscoveryNotifee struct {
 // HandlePeerFound interface to be called when new  peer is found
 func (n *DiscoveryNotifee) HandlePeerFound(peerInfo peer.AddrInfo) {
 	n.LogChan <- fmt.Sprintf("discovered peer: %s", peerInfo)
-	if n.PeerHost.ID().Pretty() != peerInfo.ID.Pretty() {
+	if n.PeerHost.ID() != peerInfo.ID {
 		n.PeerChan <- peerInfo
 	}
 }

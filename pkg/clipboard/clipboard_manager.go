@@ -78,7 +78,7 @@ func (c *ClipboardManager) IsReceivedDevice(dv *device.Device) bool {
 		return false
 	}
 
-	return c.receivedClipboard.Device.AddressInfo.ID.Pretty() == dv.AddressInfo.ID.Pretty()
+	return c.receivedClipboard.Device.AddressInfo.ID == dv.AddressInfo.ID
 }
 
 // IsReceivedClipboard returns true if it's same clipboard data with the received clipboard

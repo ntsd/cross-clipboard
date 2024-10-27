@@ -89,7 +89,7 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 
 		// This function is called when a peer initiates a connection and starts a stream with this peer.
 		cc.Host.SetStreamHandler(stream.PROTOCAL_ID, streamHandler.HandleStream)
-		cc.LogChan <- fmt.Sprintf("[*] your multiaddress is: /ip4/%s/tcp/%v/p2p/%s", cc.Config.ListenHost, cc.Config.ListenPort, host.ID().Pretty())
+		cc.LogChan <- fmt.Sprintf("[*] your multiaddress is: /ip4/%s/tcp/%v/p2p/%s", cc.Config.ListenHost, cc.Config.ListenPort, host.ID())
 
 		peerInfoChan, err := discovery.InitMultiMDNS(cc.Host, cc.Config.GroupName, cc.LogChan)
 		if err != nil {
@@ -100,20 +100,20 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 		for {
 			select {
 			case peerInfo := <-peerInfoChan: // when discover a peer
-				dv := cc.DeviceManager.GetDevice(peerInfo.ID.Pretty())
+				dv := cc.DeviceManager.GetDevice(peerInfo.ID.String())
 				if dv != nil && dv.Status == device.StatusBlocked {
-					cc.ErrorChan <- xerror.NewRuntimeErrorf("device %s is blocked", peerInfo.ID.Pretty())
+					cc.ErrorChan <- xerror.NewRuntimeErrorf("device %s is blocked", peerInfo.ID)
 					continue
 				}
 
-				cc.LogChan <- fmt.Sprintf("connecting to peer: %s", peerInfo.ID.Pretty())
+				cc.LogChan <- fmt.Sprintf("connecting to peer: %s", peerInfo.ID)
 
 				retry := 1
 				for ; retry < 5; retry++ { // retry to connect
 					if err := cc.Host.Connect(ctx, peerInfo); err != nil {
 						cc.ErrorChan <- xerror.NewRuntimeErrorf(
 							"error to connect to peer %s, retrying %d",
-							peerInfo.ID.Pretty(),
+							peerInfo.ID,
 							retry,
 						).Wrap(err)
 						time.Sleep(time.Duration(retry*10) * time.Second)
@@ -122,7 +122,7 @@ func NewCrossClipboard(cfg *config.Config) (*CrossClipboard, error) {
 					break
 				}
 				if retry == 5 {
-					cc.ErrorChan <- xerror.NewRuntimeErrorf("error to connect to peer %s", peerInfo.ID.Pretty())
+					cc.ErrorChan <- xerror.NewRuntimeErrorf("error to connect to peer %s", peerInfo.ID)
 					continue
 				}
 

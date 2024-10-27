@@ -21,7 +21,7 @@ func NewDeviceManager(cfg *config.Config) *DeviceManager {
 }
 
 func (dm *DeviceManager) AddDevice(device *device.Device) {
-	dm.Devices[device.AddressInfo.ID.Pretty()] = device
+	dm.Devices[device.AddressInfo.ID.String()] = device
 	dm.DevicesUpdated <- struct{}{}
 }
 
@@ -29,7 +29,7 @@ func (dm *DeviceManager) RemoveDevice(device *device.Device) {
 	// Flush and close ignore error
 	device.Writer.Flush()
 	device.Stream.Close()
-	delete(dm.Devices, device.AddressInfo.ID.Pretty())
+	delete(dm.Devices, device.AddressInfo.ID.String())
 	dm.DevicesUpdated <- struct{}{}
 }
 
@@ -38,7 +38,7 @@ func (dm *DeviceManager) GetDevice(id string) *device.Device {
 }
 
 func (dm *DeviceManager) UpdateDevice(device *device.Device) {
-	dm.Devices[device.AddressInfo.ID.Pretty()] = device
+	dm.Devices[device.AddressInfo.ID.String()] = device
 	dm.DevicesUpdated <- struct{}{}
 	dm.Save()
 }

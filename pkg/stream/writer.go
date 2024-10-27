@@ -124,7 +124,7 @@ func (s *StreamHandler) sendDeviceData(dv *device.Device) {
 	if err != nil {
 		dv.Status = device.StatusError
 		s.deviceManager.UpdateDevice(dv)
-		s.errorChan <- xerror.NewRuntimeErrorf("cannot send device data to %s", dv.AddressInfo.ID.Pretty()).Wrap(err)
+		s.errorChan <- xerror.NewRuntimeErrorf("cannot send device data to %s", dv.AddressInfo.ID).Wrap(err)
 	}
 }
 
@@ -139,7 +139,7 @@ func (s *StreamHandler) SendSignal(dv *device.Device, signal Signal) {
 	if err != nil {
 		dv.Status = device.StatusError
 		s.deviceManager.UpdateDevice(dv)
-		s.errorChan <- xerror.NewRuntimeErrorf("cannot send signal to %s", dv.AddressInfo.ID.Pretty()).Wrap(err)
+		s.errorChan <- xerror.NewRuntimeErrorf("cannot send signal to %s", dv.AddressInfo.ID).Wrap(err)
 	}
 }
 

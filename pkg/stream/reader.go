@@ -15,7 +15,7 @@ const limitDataSize = 1 << 20 // data size to avoid to read (100 MB)
 
 // CreateReadData craete a new read streaming for host or peer
 func (s *StreamHandler) CreateReadData(reader *bufio.Reader, dv *device.Device) {
-	s.logChan <- fmt.Sprintf("sending device info and public key to %s", dv.AddressInfo.ID.Pretty())
+	s.logChan <- fmt.Sprintf("sending device info and public key to %s", dv.AddressInfo.ID)
 
 	s.sendDeviceData(dv)
 
@@ -25,7 +25,7 @@ disconnect:
 		dataSize, err := readDataSize(reader)
 		if err != nil {
 			if err == network.ErrReset { // error stream reset because it unusual stream end
-				s.errorChan <- xerror.NewRuntimeErrorf("peer %s stream reset", dv.AddressInfo.ID.Pretty()).Wrap(err)
+				s.errorChan <- xerror.NewRuntimeErrorf("peer %s stream reset", dv.AddressInfo.ID).Wrap(err)
 				dv.Status = device.StatusDisconnected
 				s.deviceManager.UpdateDevice(dv)
 				break disconnect
@@ -83,7 +83,7 @@ disconnect:
 		}
 
 		if signal != nil {
-			s.logChan <- fmt.Sprintf("received signal %v, peer: %s", signal, dv.AddressInfo.ID.Pretty())
+			s.logChan <- fmt.Sprintf("received signal %v, peer: %s", signal, dv.AddressInfo.ID)
 			switch *signal {
 			case SignalDisconnect:
 				dv.Status = device.StatusDisconnected
@@ -96,11 +96,11 @@ disconnect:
 
 		if clipboardData != nil {
 			s.clipboardManager.WriteClipboard(clipboard.FromProtobuf(clipboardData, dv))
-			s.logChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", dv.AddressInfo.ID.Pretty(), clipboardData.DataSize)
+			s.logChan <- fmt.Sprintf("received clipboard data, peer: %s size: %d", dv.AddressInfo.ID, clipboardData.DataSize)
 		}
 
 		if deviceData != nil {
-			s.logChan <- fmt.Sprintf("received device data, peer: %s", dv.AddressInfo.ID.Pretty())
+			s.logChan <- fmt.Sprintf("received device data, peer: %s", dv.AddressInfo.ID)
 
 			s.logChan <- fmt.Sprintf("%s wanted to connect", deviceData.Name)
 			dv.UpdateFromProtobuf(deviceData)
@@ -120,12 +120,12 @@ disconnect:
 		}
 	}
 
-	s.logChan <- fmt.Sprintf("ending read stream for peer: %s", dv.AddressInfo.ID.Pretty())
+	s.logChan <- fmt.Sprintf("ending read stream for peer: %s", dv.AddressInfo.ID)
 
 	err := dv.Stream.Close()
 	if err != nil {
 		if err == network.ErrReset { // check stream already reset
-			s.logChan <- fmt.Sprintf("peer %s stream already reset", dv.AddressInfo.ID.Pretty())
+			s.logChan <- fmt.Sprintf("peer %s stream already reset", dv.AddressInfo.ID)
 		}
 		s.errorChan <- fmt.Errorf("can not close stream for peer %s: %w", dv.AddressInfo.ID, err)
 	}

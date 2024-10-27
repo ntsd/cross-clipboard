@@ -11,3 +11,6 @@ devices.json
 
 # go releaser
 dist/
+
+.cross-clipboard
+cross-clipboard
