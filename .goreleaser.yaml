@@ -2,6 +2,8 @@
 # Make sure to check the documentation at https://goreleaser.com
 project_name: cross-clipboard
 
+version: 2
+
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -27,15 +29,11 @@ builds:
       - amd64
       - arm64
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-    format: tar.gz
+  - format: tar.gz
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:
@@ -47,10 +45,10 @@ changelog:
 brews:
   - homepage: 'https://github.com/ntsd/cross-clipboard'
     description: 'A multi device clipboard sharing over P2P network.'
-    folder: Formula
+    directory: Formula
     commit_author:
       name: ntsd
       email: jo06942@gmail.com
-    tap:
+    repository:
       owner: ntsd
       name: homebrew-cross-clipboard
