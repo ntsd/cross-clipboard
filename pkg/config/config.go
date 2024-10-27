@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const configDirName = ".cross-clipboard"
+const configDirName = ".config/cross-clipboard"
 
 // Config config struct for cross clipbaord
 type Config struct {
