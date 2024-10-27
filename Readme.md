@@ -16,7 +16,7 @@ A multi device clipboard sharing over P2P network.
 - Cross-platform desktop (Done) - support Windows, Linux, and Darwin (macOS).
 - Cross-platform mobile (Ongoing) - support iOS and Android.
 
-## Libraries 
+## Libraries
 
 - [libp2p](https://github.com/libp2p/go-libp2p)
 - [clipboard](https://github.com/golang-design/clipboard)
@@ -24,6 +24,17 @@ A multi device clipboard sharing over P2P network.
 - [protobuf](https://developers.google.com/protocol-buffers)
 
 ## Installation
+
+### Homebrew tap install
+
+```shell
+brew tap ntsd/cross-clipboard
+brew install cross-clipboard
+```
+
+### Binary File (MacOS, Windows, Linux)
+
+Download from the release page <https://github.com/ntsd/cross-clipboard/releases>.
 
 ### Go install
 
@@ -33,13 +44,6 @@ Required: Go 1.23 or above
 
 ```shell
 go install github.com/ntsd/cross-clipboard@latest
-```
-
-### Homebrew tap install
-
-```shell
-brew tap ntsd/cross-clipboard
-brew install cross-clipboard
 ```
 
 ### Headless Linux
