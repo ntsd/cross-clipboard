@@ -8,7 +8,7 @@ build:
 	go build .
 
 release:
-	goreleaser release --rm-dist --snapshot
+	goreleaser release --snapshot --clean
 
 bind-android:
 	gomobile bind -target=android ./mobile/...
